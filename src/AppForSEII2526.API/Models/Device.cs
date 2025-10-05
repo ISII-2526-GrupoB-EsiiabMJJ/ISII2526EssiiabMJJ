@@ -15,7 +15,7 @@ namespace AppForSEII2526.API.Models
         public Device(
             int id,
             int year,
-            int quantity,
+            QualityType quality,
             int quantityForRent,
             int quantityForPurchase,
 
@@ -25,7 +25,7 @@ namespace AppForSEII2526.API.Models
             string name,
             string color,
             string brand,
-            //string description,
+            string description,
 
             Model model,
 
@@ -35,7 +35,7 @@ namespace AppForSEII2526.API.Models
         {
             this.Id = id;
             this.Year = year;
-            this.Quantity = quantity;
+            this.Quality = quality;
             this.quantityForRent = quantityForRent;
             this.quantityForPurchase = quantityForPurchase;
 
@@ -45,7 +45,7 @@ namespace AppForSEII2526.API.Models
             this.Name = name;
             this.Color = color;
             this.Brand = brand;
-          //  this.Description = description;
+            this.Description = description;
 
             this.Model = model;
 
@@ -65,8 +65,7 @@ namespace AppForSEII2526.API.Models
         public int Year { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "El numero de dispositivos debe ser mayor que 0")]
-        public int Quantity { get; set; }
+        public QualityType Quality { get; set; }
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "El numero de dispositivos para alquilar debe ser mayor que 0")]
@@ -92,7 +91,7 @@ namespace AppForSEII2526.API.Models
         [Required]
         public string Brand { get; set; }
         [Required]
-        // public string Description { get; set; }
+        public string Description { get; set; }
 
 
 
