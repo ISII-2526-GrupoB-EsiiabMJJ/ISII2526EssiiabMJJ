@@ -1,0 +1,75 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AppForSEII2526.API.Models
+{
+    public class Purchase
+    {
+        public Purchase()
+        {
+            Items = new List<PurchaseItem>();
+        }
+
+        public Purchase(
+            string customerUserName,
+            string customerNameSurname,
+            ApplicationUser applicationUser,
+            string deliveryAddress,
+            DateTime purchaseDateUtc,
+            IList<PurchaseItem> items,
+            PaymentMethod paymentMethod)
+        {
+            CustomerUserName = customerUserName;
+            CustomerNameSurname = customerNameSurname;
+            ApplicationUser = applicationUser;
+            DeliveryAddress = deliveryAddress;
+            PurchaseDateUtc = purchaseDateUtc;
+            Items = items ?? new List<PurchaseItem>();
+            PaymentMethod = paymentMethod;
+
+            TotalPrice = decimal.Round(Items.Sum(i => i.Price * i.Quantity), 2);
+            TotalQuantity = Items.Sum(i => i.Quantity);
+        }
+
+        public Purchase(
+            int id,
+            string customerUserName,
+            string customerNameSurname,
+            ApplicationUser applicationUser,
+            string deliveryAddress,
+            DateTime purchaseDateUtc,
+            IList<PurchaseItem> items,
+            PaymentMethod paymentMethod)
+            : this(customerUserName, customerNameSurname, applicationUser, deliveryAddress, purchaseDateUtc, items, paymentMethod)
+        {
+            Id = id;
+        }
+
+        [Key] public int Id { get; set; }
+
+        [Required] public string CustomerUserName { get; set; } = string.Empty;
+        [Required] public string CustomerNameSurname { get; set; } = string.Empty;
+
+        public string? ApplicationUserId { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
+
+        [Required, MaxLength(250)]
+        public string DeliveryAddress { get; set; } = string.Empty;
+
+        [Required] public PaymentMethod PaymentMethod { get; set; }
+        [Required] public DateTime PurchaseDateUtc { get; set; } = DateTime.UtcNow;
+
+        [Required, Column(TypeName = "decimal(12,2)")]
+        public decimal TotalPrice { get; set; }
+
+        [Required] public int TotalQuantity { get; set; }
+
+        public IList<PurchaseItem> Items { get; set; } = new List<PurchaseItem>();
+    }
+
+    public enum PaymentMethod
+    {
+        CreditCard,
+        PayPal
+    }
+}
