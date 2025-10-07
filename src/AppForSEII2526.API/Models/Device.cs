@@ -102,6 +102,10 @@ namespace AppForSEII2526.API.Models
         //[Required]
         public IList<PurchaseItem> PurchaseItems { get; set; }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Name);
+        }
 
         public override bool Equals(object? obj)
         {
