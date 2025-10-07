@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace AppForSEII2526.API.Models
 {
@@ -64,6 +65,10 @@ namespace AppForSEII2526.API.Models
                    Name == rental.Name &&
                    Surname == rental.Surname &&
                    RentalItems.SequenceEqual(rental.RentalItems);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id,Name );
         }
     }
     public enum PaymentMethodTypes
