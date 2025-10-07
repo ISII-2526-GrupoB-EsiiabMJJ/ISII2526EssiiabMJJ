@@ -40,5 +40,13 @@ namespace AppForSEII2526.API.Models
         public decimal TotalPrice { get; set; }
 
         public IList<ReceiptItem> ReceiptItems { get; set; } = new List<ReceiptItem>();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not Receipt other)
+                return false;
+
+            return Id == other.Id;
+        }
     }
 }

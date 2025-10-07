@@ -32,5 +32,14 @@ namespace AppForSEII2526.API.Models
 
         [ForeignKey(nameof(RepairId))]
         public Repair Repair { get; set; }
+        public override bool Equals(object obj)
+        {
+            if (obj is not ReceiptItem other)
+                return false;
+
+            return Id == other.Id;
+        }
+
+        public override int GetHashCode() => Id.GetHashCode();
     }
 }

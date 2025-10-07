@@ -22,5 +22,13 @@ namespace AppForSEII2526.API.Models
         public string Name { get; set; }
 
         public IList<Repair> Repairs { get; set; } = new List<Repair>();
+        public override bool Equals(object obj)
+        {
+            if (obj is not Scale other)
+                return false;
+            return Name == other.Name;
+        }
+
+        public override int GetHashCode() => Name?.GetHashCode() ?? 0;
     }
 }

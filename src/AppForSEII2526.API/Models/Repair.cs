@@ -38,5 +38,17 @@ namespace AppForSEII2526.API.Models
         public Scale Scale { get; set; }
 
         public IList<ReceiptItem> ReceiptItems { get; set; } = new List<ReceiptItem>();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not Repair other)
+                return false;
+
+            // Dos reparaciones son iguales si tienen el mismo Id
+            return Id == other.Id;
+        }
+
+        public override int GetHashCode() => Id.GetHashCode();
     }
 }
+
