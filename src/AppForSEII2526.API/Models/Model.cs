@@ -34,5 +34,8 @@ namespace AppForSEII2526.API.Models
         [MinLength(2, ErrorMessage = "El nombre del modelo debe tener mínimo 2 caracteres")]
         public string NameModel { get; set; }
 
+        [Required]
+        public IList<Device> Devices { get; set; }
+
     }
 }
