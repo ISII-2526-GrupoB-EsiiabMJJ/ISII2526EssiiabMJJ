@@ -24,5 +24,11 @@ namespace AppForSEII2526.API.Models
         public string? Surname { get; set; }
 
         public ICollection<Receipt> Receipt { get; set; } = new List<Receipt>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
+
+       
+        public ICollection<Purchase> Purchases { get; set; } = new List<Purchase>();
     }
 }
