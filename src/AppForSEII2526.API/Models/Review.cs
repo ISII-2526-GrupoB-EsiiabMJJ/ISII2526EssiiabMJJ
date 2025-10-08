@@ -34,6 +34,7 @@
             this.ReviewItems = reviewItems;
 
             this.ApplicationUser = applicationUser;
+            this.ApplicationUserId = applicationUser.Id;
         }
 
         [Key]
@@ -58,6 +59,8 @@
         public DateTime DateOfReview { get; set; }
         public IList<ReviewItem> ReviewItems { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
+
+        public string ApplicationUserId { get; set; }
 
         public override bool Equals(object? obj)
         {

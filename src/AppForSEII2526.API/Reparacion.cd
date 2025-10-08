@@ -13,7 +13,7 @@
   <Class Name="AppForSEII2526.API.Models.Receipt">
     <Position X="11.25" Y="1" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAHAAAAAAAAAAAQgCAAAAAAAAQAQAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAHAAAAAAAAAACQgCAAAAAAAAQAQAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Receipt.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -50,11 +50,11 @@
   <Class Name="AppForSEII2526.API.Models.ApplicationUser">
     <Position X="13.5" Y="4" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQABAAAAAAAACAAAAAAAAA=</HashCode>
+      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAAAAAAAABAAA=</HashCode>
       <FileName>Models\ApplicationUser.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
-      <Property Name="Receipt" />
+      <Property Name="Receipts" />
     </ShowAsCollectionAssociation>
   </Class>
   <Font Name="Segoe UI" Size="9" />

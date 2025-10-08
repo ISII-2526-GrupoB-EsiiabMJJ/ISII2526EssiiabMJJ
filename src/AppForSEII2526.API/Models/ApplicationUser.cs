@@ -23,7 +23,7 @@ namespace AppForSEII2526.API.Models
         [Display(Name = "Surname")]
         public string? Surname { get; set; }
 
-        public ICollection<Receipt> Receipt { get; set; } = new List<Receipt>();
+        public ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
         public ICollection<Rental> Rentals { get; set; } = new List<Rental>();
