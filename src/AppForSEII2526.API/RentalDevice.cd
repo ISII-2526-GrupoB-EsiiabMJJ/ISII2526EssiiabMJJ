@@ -29,6 +29,9 @@
       <HashCode>EAADCAAAAAAAAAAQhCAAAEQABAAAQIAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Rental.cs</FileName>
     </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ApplicationUser" />
+    </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="RentalItems" />
     </ShowAsCollectionAssociation>
@@ -44,12 +47,15 @@
       <Property Name="Rent" />
     </ShowAsAssociation>
   </Class>
-  <Enum Name="AppForSEII2526.API.Models.PaymentMethodTypes" Collapsed="true">
-    <Position X="10.75" Y="6" Width="1.5" />
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="12.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAQAAAAAAABAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Models\Rental.cs</FileName>
+      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAACAAAAAAAAA=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
     </TypeIdentifier>
-  </Enum>
+    <ShowAsCollectionAssociation>
+      <Property Name="Rentals" />
+    </ShowAsCollectionAssociation>
+  </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>
