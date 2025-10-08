@@ -20,7 +20,6 @@ namespace AppForSEII2526.API.Models
 
             CustomerUserName = customerUserName;
             CustomerNameSurname = customerNameSurname;
-            ApplicationUser = applicationUser;
             DeliveryAddress = deliveryAddress;
             PurchaseDateUtc = purchaseDateUtc;
             Items = items ?? new List<PurchaseItem>();
@@ -58,16 +57,16 @@ namespace AppForSEII2526.API.Models
         [Required, Column(TypeName = "decimal(12,2)")] public decimal TotalPrice { get; set; }
         [Required] public int TotalQuantity { get; set; }
 
-        public ICollection<PurchaseItem> Items { get; set; } = new List<PurchaseItem>();
+        public IList<PurchaseItem> Items { get; set; } = new List<PurchaseItem>();
 
         public void RecalculateTotals()
         {
             TotalPrice = decimal.Round(Items.Sum(i => i.Price * i.Quantity), 2);
             TotalQuantity = Items.Sum(i => i.Quantity);
-    }
+        }
 
         public override bool Equals(object? obj)
-    {
+        {
             if (ReferenceEquals(this, obj)) return true;
             if (obj is not Purchase other) return false;
             if (Id == 0 || other.Id == 0) return false;
@@ -76,5 +75,5 @@ namespace AppForSEII2526.API.Models
         public override int GetHashCode() => Id.GetHashCode();
     }
 
-    public enum PaymentMethod { CreditCard, PayPal, Cash}
+    public enum PaymentMethod { CreditCard, PayPal }
 }

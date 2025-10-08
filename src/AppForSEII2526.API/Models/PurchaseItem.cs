@@ -14,11 +14,8 @@ namespace AppForSEII2526.API.Models
             if (purchase is null) throw new ArgumentNullException(nameof(purchase));
             if (quantity <= 0) throw new ArgumentOutOfRangeException(nameof(quantity), "Quantity must be > 0.");
 
-            Device = device;
-            DeviceId = device.Id;
-
-            Purchase = purchase;
-            PurchaseId = purchase.Id;
+            Device = device; DeviceId = device.Id;
+            Purchase = purchase; PurchaseId = purchase.Id;
 
             Price = Convert.ToDecimal(device.priceForPurchase);
             Quantity = quantity;
