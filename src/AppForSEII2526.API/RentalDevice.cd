@@ -26,12 +26,9 @@
   <Class Name="AppForSEII2526.API.Models.Rental">
     <Position X="10" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>EAADCAAAAAAAAAAQhCAAAEQABAAAQIAAAAAAAAAAAAA=</HashCode>
+      <HashCode>EAADCAAAAAAAAACQhCAAAEQABAAAQIAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Rental.cs</FileName>
     </TypeIdentifier>
-    <ShowAsAssociation>
-      <Property Name="ApplicationUser" />
-    </ShowAsAssociation>
     <ShowAsCollectionAssociation>
       <Property Name="RentalItems" />
     </ShowAsCollectionAssociation>
@@ -50,7 +47,7 @@
   <Class Name="AppForSEII2526.API.Models.ApplicationUser">
     <Position X="12.5" Y="1.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAACAAAAAAAAA=</HashCode>
+      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAAAAAAAABAAA=</HashCode>
       <FileName>Models\ApplicationUser.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
