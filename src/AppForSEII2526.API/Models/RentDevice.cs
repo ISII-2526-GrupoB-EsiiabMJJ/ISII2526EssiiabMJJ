@@ -46,6 +46,10 @@
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your quantity for rental")]
         public int Quantity { get; set; }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(DeviceId, RentalId);
+        }
         public override bool Equals(object? obj)
         {
             return obj is RentDevice item &&

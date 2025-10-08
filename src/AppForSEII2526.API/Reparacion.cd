@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AppForSEII2526.API.Models.Scale">
+    <Position X="0.75" Y="0.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAQAAAgAAAAAQAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Scale.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Repairs" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Receipt">
+    <Position X="11.25" Y="1" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAHAAAAAAAAAACQgCAAAAAAAAQAQAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Receipt.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="ApplicationUser" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ReceiptItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Repair">
+    <Position X="4.25" Y="1" Width="2" />
+    <TypeIdentifier>
+      <HashCode>ACACAAAAAAAgAAAQgAIAABQAAAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Repair.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Scale" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="ReceiptItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ReceiptItem">
+    <Position X="7.75" Y="1.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>QAACAAAAAAAAAAAAgAAAAAEAACAAAIAAACgAAAAAAAA=</HashCode>
+      <FileName>Models\ReceiptItem.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Receipt" />
+      <Property Name="Repair" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="13.5" Y="4" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Receipts" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

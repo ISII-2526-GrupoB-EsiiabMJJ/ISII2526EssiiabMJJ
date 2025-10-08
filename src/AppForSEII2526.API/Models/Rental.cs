@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace AppForSEII2526.API.Models
 {
@@ -24,6 +25,7 @@ namespace AppForSEII2526.API.Models
             ApplicationUser = applicationUser;
             RentalItems = rentalItems;
             PaymentMethod = paymentMethod;
+            ApplicationUserId = applicationUser.Id;
         }
         public int Id { get; set; }
 
@@ -50,7 +52,9 @@ namespace AppForSEII2526.API.Models
         public IList<RentDevice> RentalItems { get; set; }
 
         public ApplicationUser ApplicationUser { get; set; }
-
+        
+        [Required]
+        public string ApplicationUserId { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -64,6 +68,10 @@ namespace AppForSEII2526.API.Models
                    Name == rental.Name &&
                    Surname == rental.Surname &&
                    RentalItems.SequenceEqual(rental.RentalItems);
+        }
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id,Name );
         }
     }
     public enum PaymentMethodTypes

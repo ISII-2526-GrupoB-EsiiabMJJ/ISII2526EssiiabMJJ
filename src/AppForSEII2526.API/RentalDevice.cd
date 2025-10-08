@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AppForSEII2526.API.Models.Device">
+    <Position X="2" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAISAAAABABlAABAgAAACIQAAAAAAIAAAAgAgBABAAA=</HashCode>
+      <FileName>Models\Device.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Model" />
+    </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="RentedDevices" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Model">
+    <Position X="5.25" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAgAAABAAAQAAAAIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Model.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Devices" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Rental">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAADCAAAAAAAAACQhCAAAEQABAAAQIAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Rental.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="RentalItems" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.RentDevice">
+    <Position X="7" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAgAgAAiAAAAAAAACAAAIAAEAAAgAAAAAA=</HashCode>
+      <FileName>Models\RentDevice.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Device" />
+      <Property Name="Rent" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="12.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAwAAEAAAAAAAAAAAAAAAAQABAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsCollectionAssociation>
+      <Property Name="Rentals" />
+    </ShowAsCollectionAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
