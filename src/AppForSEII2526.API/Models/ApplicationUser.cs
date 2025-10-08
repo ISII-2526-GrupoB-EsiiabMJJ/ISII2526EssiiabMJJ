@@ -10,7 +10,7 @@ namespace AppForSEII2526.API.Models
 
         public ApplicationUser(string id, string name, string surname, string userName)
         {
-            Id = id;            
+            Id = id;
             Name = name;
             Surname = surname;
             UserName = userName;
