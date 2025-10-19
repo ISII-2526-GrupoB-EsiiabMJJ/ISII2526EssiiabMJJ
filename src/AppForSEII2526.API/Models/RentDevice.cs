@@ -40,10 +40,12 @@
         [StringLength(100, ErrorMessage = "Title name cannot be longer than 50 characters.")]
         public string? Description { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your price for rental")]
+        [Required(ErrorMessage = "Please, set your price for rental")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
         public double Price { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your quantity for rental")]
+        [Required(ErrorMessage = "Please, set your quantity for rental")]
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1")]
         public int Quantity { get; set; }
 
         public override int GetHashCode()
