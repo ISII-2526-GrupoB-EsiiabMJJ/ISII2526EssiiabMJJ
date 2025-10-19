@@ -91,6 +91,7 @@ namespace AppForSEII2526.API.Models
         [Required]
         public string Brand { get; set; }
         [Required]
+        [StringLength(100, ErrorMessage = "Title name cannot be longer than 50 characters.")]
         public string Description { get; set; }
 
 
