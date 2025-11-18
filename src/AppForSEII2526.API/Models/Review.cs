@@ -9,7 +9,7 @@
 
         public Review(
             int reviewId,
-            int customerId,
+            string customerId,
             int overallRating,
 
             string reviewTitle,
@@ -42,7 +42,7 @@
 
 
         [Required]
-        public int CustomerId { get; set; }
+        public string CustomerId { get; set; }
         [Required]
         [Range(0, 5, ErrorMessage = "La puntuación debe estar entre 0 y 5 estrellas")]
         public int OverallRating { get; set; }
