@@ -134,3 +134,31 @@ namespace AppForSEII2526.UT.RentalsController_test
         }
     }
 }
+/*{
+  "rentalDateFrom": "2025-11-30T00:00:00",
+  "rentalDateTo": "2026-12-05T00:00:00",
+  "deliveryAddress": "Av. españa 31",
+  "customerUserName": "Jaime de los campos",
+  "customerNameSurname": "Jaime de los campos",
+  "rentalItems": [
+    {
+      "deviceID": 2,
+      "priceForRent": 49.99,
+      "description": "Tarjeta gráfica de última generación ideal para gaming 4K y renderizado profesional.",
+      "model": "NVIDIA GeForce RTX 5080"
+    },
+    {
+      "deviceID": 3,
+      "priceForRent": 39.99,
+      "description": "Excelente rendimiento para videojuegos exigentes y aplicaciones de diseño 3D.",
+      "model": "NVIDIA GeForce RTX 4080 Ti"
+    },
+    {
+      "deviceID": 4,
+      "priceForRent": 64.99,
+      "description": "Modelo tope de gama con gran eficiencia energética y potencia para IA y gráficos avanzados.",
+      "model": "NVIDIA GeForce RTX 5090"
+    }
+  ],
+  "paymentMethod": "Cash"
+}*/
