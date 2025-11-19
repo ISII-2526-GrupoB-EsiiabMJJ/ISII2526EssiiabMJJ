@@ -18,8 +18,11 @@ namespace AppForSEII2526.API.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        [Route("[action]")]
+        //-------------------------------------------------
+        // GET: api/Device/rental
+        // Lista todos los dispositivos filtrando por marca o modelo
+        //-------------------------------------------------
+        [HttpGet("rental")]
         [ProducesResponseType(typeof(IList<DeviceRentalDTO>), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetDeviceForRental(
@@ -56,9 +59,43 @@ namespace AppForSEII2526.API.Controllers
             return Ok(devices);
         }
 
-        public async Task GetDeviceForRental(DateTime fromDate, DateTime toDate)
+        //-------------------------------------------------
+        // GET: api/Device/rentalByDate
+        // Filtra dispositivos disponibles entre dos fechas
+        //-------------------------------------------------
+        [HttpGet("rentalByDate")]
+        [ProducesResponseType(typeof(IList<DeviceRentalDTO>), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> GetDeviceForRentalByDate(DateTime fromDate, DateTime toDate)
         {
-            throw new NotImplementedException();
+            if (fromDate > toDate)
+            {
+                return BadRequest(new ValidationProblemDetails
+                {
+                    Title = "Invalid date range",
+                    Status = (int)HttpStatusCode.BadRequest,
+                    Detail = "fromDate must be earlier than toDate"
+                });
+            }
+
+            var devices = await _context.Device
+                .Include(d => d.Model)
+                .Include(d => d.RentedDevices)
+                    .ThenInclude(rd => rd.Rent)
+                .Where(d => d.RentedDevices
+                        .All(rd => rd.Rent.RentalDateTo < fromDate || rd.Rent.RentalDateFrom > toDate))
+                .OrderBy(d => d.Brand)
+                .Select(d => new DeviceRentalDTO(
+                    d.Id,
+                    d.Year,
+                    d.priceForRent,
+                    d.Name,
+                    d.Model.NameModel,
+                    d.Color,
+                    d.Brand))
+                .ToListAsync();
+
+            return Ok(devices);
         }
     }
 }
