@@ -22,6 +22,7 @@ namespace AppForSEII2526.API.Data
 
         public DbSet<Purchase> Purchases { get; set; }
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
+        public DbSet<ApplicationUser> ApplicationUser { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -30,7 +31,7 @@ namespace AppForSEII2526.API.Data
             builder.Entity<Review>().HasKey(x => x.ReviewId);
             builder.Entity<Model>().HasKey(x => x.Id);
             builder.Entity<Device>().HasKey(x => x.Id);
-            builder.Entity<RentDevice>().HasKey(x => x.DeviceId);
+            builder.Entity<RentDevice>().HasKey(x => new { x.DeviceId, x.RentalId });
             builder.Entity<Rental>().HasKey(x => x.Id);
             builder.Entity<Scale>().HasKey(x => x.Id);
             builder.Entity<Repair>().HasKey(x => x.Id);
@@ -107,19 +108,17 @@ namespace AppForSEII2526.API.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
-            
+
             builder.Entity<RentDevice>()
-                .HasOne(ri => ri.Device)
+                .HasOne(rd => rd.Device)
                 .WithMany(d => d.RentedDevices)
-                .HasForeignKey(ri => ri.DeviceId)
-                .IsRequired()
+                .HasForeignKey(rd => rd.DeviceId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<RentDevice>()
-                .HasOne(ri => ri.Device)
-                .WithMany(r => r.RentedDevices)
-                .HasForeignKey(ri => ri.DeviceId)
-                .IsRequired()
+                .HasOne(rd => rd.Rent)
+                .WithMany(r => r.RentalItems)
+                .HasForeignKey(rd => rd.RentalId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Rental>()
