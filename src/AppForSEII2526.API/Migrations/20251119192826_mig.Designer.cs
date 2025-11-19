@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppForSEII2526.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251008220357_CreateIdentitySchema")]
-    partial class CreateIdentitySchema
+    [Migration("20251119192826_mig")]
+    partial class mig
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -101,7 +101,8 @@ namespace AppForSEII2526.API.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("ModelId")
                         .HasColumnType("int");
@@ -295,6 +296,9 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RentalId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -305,10 +309,7 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("RentalId")
-                        .HasColumnType("int");
-
-                    b.HasKey("DeviceId");
+                    b.HasKey("DeviceId", "RentalId");
 
                     b.HasIndex("RentalId");
 
@@ -409,8 +410,9 @@ namespace AppForSEII2526.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");
@@ -564,7 +566,7 @@ namespace AppForSEII2526.API.Migrations
                     b.HasOne("AppForSEII2526.API.Models.Device", "Device")
                         .WithMany("RentedDevices")
                         .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("AppForSEII2526.API.Models.Rental", "Rent")

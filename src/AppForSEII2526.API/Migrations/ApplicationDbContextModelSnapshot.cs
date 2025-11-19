@@ -98,7 +98,8 @@ namespace AppForSEII2526.API.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("ModelId")
                         .HasColumnType("int");
@@ -406,8 +407,9 @@ namespace AppForSEII2526.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("int");
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");

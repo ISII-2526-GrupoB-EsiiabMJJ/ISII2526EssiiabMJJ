@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AppForSEII2526.API.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateIdentitySchema : Migration
+    public partial class mig : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -147,7 +147,7 @@ namespace AppForSEII2526.API.Migrations
                 {
                     ReviewId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OverallRating = table.Column<int>(type: "int", nullable: false),
                     ReviewTitle = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     CustomerCountry = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
@@ -182,7 +182,7 @@ namespace AppForSEII2526.API.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Brand = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -261,13 +261,13 @@ namespace AppForSEII2526.API.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RentDevices", x => x.DeviceId);
+                    table.PrimaryKey("PK_RentDevices", x => new { x.DeviceId, x.RentalId });
                     table.ForeignKey(
                         name: "FK_RentDevices_Device_DeviceId",
                         column: x => x.DeviceId,
                         principalTable: "Device",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_RentDevices_Rental_RentalId",
                         column: x => x.RentalId,
