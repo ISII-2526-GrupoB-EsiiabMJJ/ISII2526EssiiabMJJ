@@ -42,28 +42,7 @@ namespace AppForSEII2526.API.Models
             Quantity = quantity;
         }
 
-        public Device Device { get; set; }
-
-        public int DeviceId { get; set; }
-
-
-        public Rental Rent { get; set; }
-
-        public int RentalId { get; set; }
-
-        [StringLength(100, ErrorMessage = "Title name cannot be longer than 50 characters.")]
-        public string? Description { get; set; }
-
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your price for rental")]
-        public double Price { get; set; }
-
-        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your quantity for rental")]
-        public int Quantity { get; set; }
-
-        public override int GetHashCode()
-        {
-            Description = description;
-        }
+        
 
         public override bool Equals(object? obj)
         {
