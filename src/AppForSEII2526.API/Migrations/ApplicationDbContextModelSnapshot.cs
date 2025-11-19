@@ -292,6 +292,9 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RentalId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -302,10 +305,7 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.Property<int>("RentalId")
-                        .HasColumnType("int");
-
-                    b.HasKey("DeviceId");
+                    b.HasKey("DeviceId", "RentalId");
 
                     b.HasIndex("RentalId");
 
@@ -561,7 +561,7 @@ namespace AppForSEII2526.API.Migrations
                     b.HasOne("AppForSEII2526.API.Models.Device", "Device")
                         .WithMany("RentedDevices")
                         .HasForeignKey("DeviceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("AppForSEII2526.API.Models.Rental", "Rent")

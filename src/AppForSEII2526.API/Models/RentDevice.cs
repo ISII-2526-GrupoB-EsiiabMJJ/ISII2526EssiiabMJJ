@@ -54,12 +54,10 @@ namespace AppForSEII2526.API.Models
         [StringLength(100, ErrorMessage = "Title name cannot be longer than 50 characters.")]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "Please, set your price for rental")]
-        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your price for rental")]
         public double Price { get; set; }
 
-        [Required(ErrorMessage = "Please, set your quantity for rental")]
-        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be at least 1")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your quantity for rental")]
         public int Quantity { get; set; }
 
         public override int GetHashCode()

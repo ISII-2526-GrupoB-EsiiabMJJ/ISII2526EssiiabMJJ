@@ -54,7 +54,7 @@ namespace AppForSEII2526.API.Models
             this.PurchaseItems = purchaseItems;
         }
 
-       
+        [Key]
         public int Id { get; set; }
 
         [ForeignKey("ModelId")]
