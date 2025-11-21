@@ -27,6 +27,14 @@ namespace AppForSEII2526.API.Controllers
             _logger.LogError("Error: Rentals table does not exist");
             return NotFound();
         }
+        if (id <= 0){
+           _logger.LogError("Error: Id no puede ser menor o igual a 0");
+            return NotFound();
+         }
+        if (id == null) {
+          _logger.LogError("Error: Id no puede ser nulo");
+         return NotFound();
+        }
 
         var rental = await _context.Rental
          .Where(r => r.Id == id)
@@ -70,6 +78,9 @@ namespace AppForSEII2526.API.Controllers
 
         if (rentalForCreate.RentalItems.Count == 0)
             ModelState.AddModelError("RentalItems", "Error! You must include at least one movie to be rented");
+
+        if (!rentalForCreate.DeliveryAddress.Contains("Calle") || rentalForCreate.DeliveryAddress.Contains("Carretera"))
+                return BadRequest("Error en la dirección de envio. Por favor, introduce una dirección válida incluyendo las palabras Calle o Carreteras");
 
             var user = _context.ApplicationUser.FirstOrDefault(au => au.UserName.Equals(rentalForCreate.CustomerUserName));
 
