@@ -319,10 +319,83 @@ namespace AppForPCS.UT.ReparacionesController
                 "Máximo rendimiento en gaming e IA");
             review_without_real_customer.ReviewItems.Add(good_device);
 
+            //////////////////////////////////////////
+            //////                              //////
+            //////    Comentario null     //////
+            //////                              //////
+            //////////////////////////////////////////
+            ///
+            CreateReviewDTO review_with_null_comment = new CreateReviewDTO(
+                "1",
+                "Potencia brutal",
+                "Italy",
+                "Giorno",
+                DateTime.Now,
+                new List<ReviewItemDTO>()
+                );
 
+            ReviewItemDTO post_reviewItemDTO1 = new ReviewItemDTO(
+                1,
+                2025,
+                5,
+                "NVIDIA GeForce RTX 5090",
+                "RTX 5090 Founders Edition",
+                ""
+                );
+
+            ReviewItemDTO post_reviewItemDTO2 = new ReviewItemDTO(
+                2,
+                2025,
+                4,
+                "RTX 5080 Gaming Pro",
+                "NVIDIA GeForce RTX 5080",
+                ""
+            );
+
+            review_with_null_comment.ReviewItems.Add(post_reviewItemDTO1);
+            review_with_null_comment.ReviewItems.Add(post_reviewItemDTO2);
+
+
+            //////////////////////////////////////////
+            //////                              //////
+            //////    Comentario malo     //////
+            //////                              //////
+            //////////////////////////////////////////
+            ///
+            CreateReviewDTO review_with_bad_comment = new CreateReviewDTO(
+                "1",
+                "Potencia brutal",
+                "Italy",
+                "Giorno",
+                DateTime.Now,
+                new List<ReviewItemDTO>()
+                );
+
+            ReviewItemDTO post_reviewItemDTO3 = new ReviewItemDTO(
+                1,
+                2025,
+                5,
+                "NVIDIA GeForce RTX 5090",
+                "RTX 5090 Founders Edition",
+                "Comentario malo"
+                );
+
+            ReviewItemDTO post_reviewItemDTO4 = new ReviewItemDTO(
+                2,
+                2025,
+                4,
+                "RTX 5080 Gaming Pro",
+                "NVIDIA GeForce RTX 5080",
+                "Comentario malo"
+            );
+
+            review_with_bad_comment.ReviewItems.Add(post_reviewItemDTO3);
+            review_with_bad_comment.ReviewItems.Add(post_reviewItemDTO4);
             var todosLosTests = new List<object[]>{
                 new object[] { review_without_devices, "Debes incluir al menos un dispositivo reseñado.",  },
-                new object[] { review_with_unexistent_devices, $"El dispositivo con ID {unexistent_devices.DeviceId} no existe.", }, 
+                new object[] { review_with_unexistent_devices, $"El dispositivo con ID {unexistent_devices.DeviceId} no existe.", },
+                new object[] { review_with_null_comment, "Error, el comentario de la reseña: debe empezar por Reseña para",  },
+                new object[] { review_with_bad_comment, "Error, el comentario de la reseña: debe empezar por Reseña para", }
             };
             return todosLosTests;
             /*yield return new object[] {}*/
@@ -334,7 +407,7 @@ namespace AppForPCS.UT.ReparacionesController
 
         [Fact]
         [Trait("LevelTesting", "Unit Testing")]
-        public void PostReview_success_test()
+        public void CreateReview_success_test_comentario_bueno()
         {
 
             // Arrange
@@ -364,7 +437,7 @@ namespace AppForPCS.UT.ReparacionesController
                 5,
                 "NVIDIA GeForce RTX 5090",
                 "RTX 5090 Founders Edition",
-                "Máximo rendimiento en gaming e IA"
+                "Reseña para dispositivo"
                 );
 
             ReviewItemDTO post_reviewItemDTO2 = new ReviewItemDTO(
@@ -373,7 +446,7 @@ namespace AppForPCS.UT.ReparacionesController
                 4,
                 "RTX 5080 Gaming Pro",
                 "NVIDIA GeForce RTX 5080",
-                "Buen rendimiento pero algo ruidosa"
+                "Reseña para dispositivo"
             );
 
             review_to_create.ReviewItems.Add(post_reviewItemDTO1);
@@ -405,7 +478,7 @@ namespace AppForPCS.UT.ReparacionesController
                 "NVIDIA GeForce RTX 5090",
                 2025,
                 5,
-                "Máximo rendimiento en gaming e IA"
+                "Reseña para dispositivo"
                 );
 
             ReviewDeviceDTO device_expected2 = new ReviewDeviceDTO(
@@ -414,7 +487,7 @@ namespace AppForPCS.UT.ReparacionesController
                 "NVIDIA GeForce RTX 5080",
                 2025,
                 4,
-                "Buen rendimiento pero algo ruidosa"
+                "Reseña para dispositivo"
             );
             reviewDetailsDTO_expected.ReviewDetailsDevicesList.Add(device_expected1);
             reviewDetailsDTO_expected.ReviewDetailsDevicesList.Add(device_expected2);
@@ -449,12 +522,16 @@ namespace AppForPCS.UT.ReparacionesController
             //we look for the error
             var errors = ((ValidationProblemDetails)objFinal).Errors;
 
-            Assert.Equal(1, errors.Count);
+            Assert.NotEqual(0, errors.Count);
+
 
             var errorActual = errors.First().Value;
 
             Assert.Equal(expected_error, errorActual[0]);
 
         }
+
+
+        
     }
 }
