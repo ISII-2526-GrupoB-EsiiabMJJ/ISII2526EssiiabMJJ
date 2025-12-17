@@ -109,17 +109,20 @@ namespace AppForSEII2526.API.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
 
+           builder.Entity<RentDevice>()
+                .HasKey(rd => new { rd.RentalId, rd.DeviceId });
+
             builder.Entity<RentDevice>()
-                .HasOne(ri => ri.Device)
+                .HasOne(rd => rd.Device)
                 .WithMany(d => d.RentedDevices)
-                .HasForeignKey(ri => ri.DeviceId)
+                .HasForeignKey(rd => rd.DeviceId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<RentDevice>()
-                .HasOne(ri => ri.Device)
-                .WithMany(r => r.RentedDevices)
-                .HasForeignKey(ri => ri.DeviceId)
+                .HasOne(rd => rd.Rent)
+                .WithMany(r => r.RentalItems)
+                .HasForeignKey(rd => rd.RentalId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 

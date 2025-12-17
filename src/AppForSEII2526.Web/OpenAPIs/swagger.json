@@ -34,14 +34,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "precio",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "format": "double"
-            }
           }
         ],
         "responses": {

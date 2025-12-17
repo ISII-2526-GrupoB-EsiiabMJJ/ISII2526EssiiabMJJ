@@ -97,10 +97,10 @@ namespace AppForSEII2526.UT.DevicesController_test
         [MemberData(nameof(TestCasesFor_GetDeviceForRental_OK))]
         [Trait("Database", "WithoutFixture")]
         [Trait("LevelTesting", "Unit Testing")]
-        public async Task GetDevisceForRental_OK_test(string? filterTitle, string? filterGenre,double? precio, IList<DeviceRentalDTO> dispositivosEsperados)
+        public async Task GetDevisceForRental_OK_test(string? filterTitle, string? filterGenre, IList<DeviceRentalDTO> dispositivosEsperados)
         {
             var controller = new DeviceController(_context, null);
-            var result = await controller.GetDeviceForRental(filterTitle, filterGenre, precio);
+            var result = await controller.GetDeviceForRental(filterTitle, filterGenre);
             var okResult = Assert.IsType<OkObjectResult>(result);
             var retornoControlador = Assert.IsType<List<DeviceRentalDTO>>(okResult.Value);
             Assert.Equal(dispositivosEsperados, retornoControlador, new DeviceRentalDTOComparer());
@@ -114,7 +114,7 @@ namespace AppForSEII2526.UT.DevicesController_test
         public async Task GetDevicesForRental_OkWithNullFilters_test()
         {
             var controller = new DeviceController(_context, null);
-            var result = await controller.GetDeviceForRental(null, null,null);
+            var result = await controller.GetDeviceForRental(null, null);
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var retornoControlador = Assert.IsType<List<DeviceRentalDTO>>(okResult.Value);

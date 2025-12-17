@@ -27,21 +27,14 @@ namespace AppForSEII2526.API.Controllers
         [ProducesResponseType(typeof(ValidationProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetDeviceForRental(
             string? deviceBrand,
-            string? deviceModel,
-            double? precio)
+            string? deviceModel)
         {
-          var query = _context.Rental.AsQueryable();
             // Validación básica
             if (!string.IsNullOrEmpty(deviceBrand))
                 deviceBrand = deviceBrand.Trim().ToLower();
 
             if (!string.IsNullOrEmpty(deviceModel))
                 deviceModel = deviceModel.Trim().ToLower();
-
-           if (!double.IsNaN((double)precio)) {
-                query = query.Where(t => t.TotalPrice >= precio);
-            }
-               
 
             // Consulta
             var devices = await _context.Device
