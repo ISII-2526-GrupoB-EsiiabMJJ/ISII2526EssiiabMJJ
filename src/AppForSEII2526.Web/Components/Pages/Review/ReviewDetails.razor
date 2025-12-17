@@ -1,0 +1,107 @@
+﻿@page "/review/reviewdetails"
+@using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
+@inject AppForSEII2526APIClient apiservice
+
+@attribute [Authorize]
+
+<h3>Review</h3>
+
+@if (review == null)
+{
+    <p>@error</p>
+}
+else
+{
+    <table class="table table-borderless table-sm">
+        <tr>
+            <th>Customer Name</th>
+            <td id="CustomerName">@review.CustomerName</td>
+        </tr>
+        <tr>
+            <th>Customer Country</th>
+            <td id="CustomerCountry">@review.CustomerCountry</td>
+        </tr>
+        <tr>
+            <th>Review Title</th>
+            <td id="ReviewTitle">@review.ReviewTitle</td>
+        </tr>
+        <tr>
+            <th>Review Date</th>
+            <td id="ReviewDate">@review.DateOfReview</td>
+        </tr>
+    </table>
+    <h4>Reviewed devices</h4>
+
+    <table class="table" id="ReviwedDevices">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Model</th>
+                <th scope="col">Year</th>
+                <th scope="col">Rate</th>
+                <th scope="col">Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ReviewDeviceDTO item in review.ReviewDetailsDevicesList)
+            {
+                <tr id="ReviewItem_@item.Name">
+                    <td>@item.Name</td>
+                    <td>@item.Model</td>
+                    <td>@item.Year</td>
+                    <td>@item.Rating</td>
+                    <td>@item.Comment</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            @*colspan is used to state that TWO columns are collapsed*@
+        </tfoot>
+
+    </table>
+
+}
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int reviewId { get; set; }
+    private ReviewDetailsDTO review;
+    private string error = "";
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        //we check the user is logged in
+        string userName = "";
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated && user.IsInRole("User"))
+                {
+                    userName = user.Identity.Name;
+                }
+            }
+        }
+
+        try
+        {
+            review = await apiservice.ReviewDetailsAsync(reviewId);
+        }
+        catch (ApiException exception)
+        //   if ((rental == null) || (rental.CustomerUserName != userName))
+        {
+            error = $"Error! You are not authorized to see this review or there is not a review with id={reviewId}";
+        }
+
+    }
+
+}

@@ -1,0 +1,216 @@
+﻿@page "/review/listdevicesforreview"
+@using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
+
+@inject ILogger<DevicesList> logger
+@inject AppForSEII2526APIClient apiservice
+@inject ReviewStateContainer reviewState
+@inject NavigationManager navigation
+
+@attribute [Authorize]
+
+<h3>Select Devices for review</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between">
+            <div>
+                <b>Devices Selected:</b> <span id="devicesCounter">@review.ReviewItems.Count</span>
+            </div>
+            <button class="btn btn-primary" id="createReviewButton" @onclick="@RentMovies" disabled="@RentButtonDisabled">Review devices</button>
+        </div>
+    </div>
+
+    <div class="row" hidden="@hiddenRentingCart">
+        @foreach (ReviewItemDTO item in review.ReviewItems)
+        {
+            <RentalItem Item="item" OnRemovedItem="@(()=>RemoveDevice(item.DeviceId))"></RentalItem>
+        }
+    </div>
+
+      
+
+    <div class="row">
+        <p></p>
+        <h5>Filter devices</h5>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Brand</span>
+            </div>
+            <input type="text" class="form-control" @bind="deviceBrand" id="inputBrand">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Year</span>
+            </div>
+            <input type="text" class="form-control" @bind="deviceYear" id="inputYear">
+            <div class="input-group-append">
+                <button class="btn btn-outline-primary" id="searchButton" @onclick="@SearchDevices">Search available devices</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <div class="container-fluid">
+            @if (Devices.Count() == 0)
+            {
+                <p id ="noDevicesAvailable">There are no devices available to create a review</p>
+            }
+            else
+            {
+                <div class="mh-100 table-responsive">
+                    <table class="table table-condensed table-hover" id="devicesTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Brand</th>
+                                <th>Color</th>
+                                <th>Year</th>
+                                <th>Model</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in Devices)
+                            {
+                                <tr id="deviceData_@device.Name">
+                                    <td>@device.Name</td>
+                                    <td>@device.Brand</td>
+                                    <td>@device.Color</td>
+                                    <td>@device.Year</td>
+                                    <td>@device.Model</td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary" id="device_to_add_@device.Name" @onclick="@(()=>AddDevice(device))">Add</button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary" id="device_to_remove_@device.Name" @onclick="@(() => RemoveDevice(device.Id))">Remove</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@*a modal popup dialog to inform user about problems*@
+@if (DialogOKIsOpen)
+{
+    <Dialog Caption="Error!"
+            Message="@DialogOKMessage"
+            OnClose="@OnDialogOKClose"
+            Type=Dialog.Category.Okay>
+    </Dialog>
+}
+
+@code {
+
+    private bool DialogOKIsOpen;
+    private string DialogOKMessage;
+    private void OpenDialogOK(string message)
+    {
+        DialogOKIsOpen = true;
+        DialogOKMessage = message;
+    }
+    private async Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+    }
+
+    private bool hiddenRentingCart = true;
+    private void ToggleRentingCart()
+    {
+        hiddenRentingCart = !hiddenRentingCart;
+    }
+
+    private ICollection<DeviceDetailsDTO>? Devices { get; set; } = new List<DeviceDetailsDTO>();
+    private string deviceBrand;
+    private string deviceYear = null;//DateTime.Now.Year.ToString();
+
+
+    private string error;
+    private CreateReviewDTO review => reviewState.Review;
+    private bool RentButtonDisabled { get { return review.ReviewItems.Count == 0; } }
+
+    private ICollection<string>? genresNames = new List<string>();
+    private string movieGenreSelected;
+
+    private void AddDevice(DeviceDetailsDTO device)
+    {
+        ReviewItemDTO ri = new ReviewItemDTO();
+        ri.DeviceId = device.Id;
+        ri.Model = device.Model;
+        ri.Year = device.Year;
+        ri.Name = device.Name;
+        ri.Rating = 1;
+        ri.Comment = null;
+        reviewState.AddDeviceForReview(ri);
+    }
+
+    private void RemoveDevice(int itemId)
+    {
+        reviewState.RemoveDeviceFromReview(itemId);
+        if (review.ReviewItems.Count == 0) hiddenRentingCart = true;
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        //we obtained the list of movies to be shown
+        SearchDevices();
+    }
+
+
+    protected async void SearchDevices()
+    {
+        try
+        {
+            int? yearFilter = null;
+
+            // Caso 1: campo vacío → null
+            if (string.IsNullOrEmpty(deviceYear))
+            {
+                yearFilter = null;
+            }
+            else
+            {
+                // Caso 2: campo con contenido → intentar parsear
+                if (int.TryParse(deviceYear, out int parsedYear))
+                {
+
+                    if (parsedYear <= 0)
+                    {
+                        // Caso 3: símbolos raros → mostrar error y salir
+                        OpenDialogOK("El año debe ser un entero positivo.");
+                        return;
+                    }
+                    else
+                    {
+                        yearFilter = parsedYear;
+                    }
+                }
+                else
+                {
+                    // Caso 3: símbolos raros → mostrar error y salir
+                    OpenDialogOK("El año debe ser un número válido.");
+                    return;
+                }
+            }
+
+            Devices = await apiservice.DeviceInfoAsync(deviceBrand, yearFilter);
+        }
+        catch (ApiException ex)
+        {
+            Devices = new List<DeviceDetailsDTO>();
+            logger.LogError("Error! There was an error while connecting to the DeviceInfoAsync service");
+        }
+
+        StateHasChanged();
+    }
+
+    private void RentMovies()
+    {
+        navigation.NavigateTo("/review/createreview");
+    }
+
+}

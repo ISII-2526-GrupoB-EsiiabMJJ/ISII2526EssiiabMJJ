@@ -1,0 +1,302 @@
+﻿@page "/review/createreview"
+@using AppForSEII2526.Web.API
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using Microsoft.AspNetCore.Authorization
+@inject AppForSEII2526.Web.API.AppForSEII2526APIClient apiservice
+@inject ReviewStateContainer reviewState
+@inject NavigationManager Navigation
+
+@attribute [Authorize]
+
+<h3>Review</h3>
+<EditForm Model="review">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row g-2">
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="review.CustomerName" class="form-control" id="CustomerName" />
+
+                <ValidationMessage For="@(() => review.CustomerName)" />
+
+                <label for="CustomerName">Customer Name</label>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="review.CustomerCountry" class="form-control" id="CustomerCountry" />
+                <ValidationMessage For="@(() => review.CustomerCountry)" />
+
+                <label for="CustomerCountry">Customer Country</label>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="review.ReviewTitle" class="form-control" id="ReviewTitle" />
+                <ValidationMessage For="@(() => review.ReviewTitle)" />
+
+                <label for="ReviewTitle">Review Title</label>
+            </div>
+        </div>
+    </div>
+    <p></p>
+    <h4>Review devices</h4>
+    <p>
+        <button class="btn btn-outline-primary" type="submit" @onclick="ModifyReviewItems" id="ModifyDevices">
+            Modify devices
+        </button>
+    </p>
+
+    <div class="mh-100 table-responsive">
+        <table class="table table-condensed table-hover" id="TableOfReviewItems">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Year</th>
+                    <th>Model</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                </tr>
+            </thead>
+            <tbody id="TableBodyOfReviewItems">
+                @foreach (var item in review.ReviewItems)
+                {
+
+                    <tr id="DeviceData_@item.Name">
+                        <td>@item.Name</td>
+                        <td>@item.Year</td>
+                        <td>@item.Model</td>
+                        <td>
+                            <InputNumber @bind-Value="item.Rating" class="form-control" id="@($"rating_{item.Name}")" />
+                            <ValidationMessage For="@(() => item.Rating)" />
+                        </td>
+                        <td>
+                            <InputText @bind-Value="item.Comment" class="form-control" id="@($"comment_{item.Name}")" />
+                            <ValidationMessage For="@(() => item.Comment)" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</EditForm>
+<div class="d-flex justify-content-center mt-4">
+    <EditForm Model="review" OnValidSubmit="OpenDialog">
+        <button class="btn btn-primary px-4" type="submit" id="endReview">
+            End review
+        </button>
+    </EditForm>
+</div>
+
+@if (DialogIsOpen)
+{
+    <Dialog Caption="Review device"
+            Message="Do you want to proceed to submit the review?"
+            OnClose="@(async (bool confirmation) => OnDialogClose(confirmation))"
+            Type=Dialog.Category.SaveNot>
+    </Dialog>
+}
+@if (DialogOKIsOpen)
+{
+    <Dialog Caption="Error!"
+            Message="@DialogOKMessage"
+            OnClose="@OnDialogOKClose"
+            Type=Dialog.Category.Okay>
+    </Dialog>
+}
+
+@code {
+    private CreateReviewDTO review => reviewState.Review;
+
+    private bool DialogIsOpen;
+    private bool OkCancel = false;
+
+    private void OpenDialog()
+    {
+
+        DialogIsOpen = true;
+
+    }
+
+    private void ModifyReviewItems()
+    {
+        Navigation.NavigateTo("/review/listdevicesforreview");
+    }
+    private bool ValidateReview(CreateReviewDTO review)
+    {
+        // Validar CustomerName (opcional, pero si se indica debe tener entre 3 y 20 caracteres)
+        if (!string.IsNullOrWhiteSpace(review.CustomerName))
+        {
+            if (review.CustomerName.Length < 3 || review.CustomerName.Length > 20)
+            {
+                OpenDialogOK("El nombre del cliente debe tener entre 3 y 20 caracteres en caso de indicarse");
+                return false;
+            }
+        }
+
+        // Validar CustomerCountry (obligatorio)
+        if (string.IsNullOrWhiteSpace(review.CustomerCountry))
+        {
+            OpenDialogOK("El nombre del país es obligatorio.");
+            return false;
+        }
+        if (review.CustomerCountry.Length < 4 || review.CustomerCountry.Length > 40)
+        {
+            OpenDialogOK("El país debe tener entre 4 y 40 caracteres.");
+            return false;
+        }
+
+        // Validar ReviewTitle (obligatorio)
+        if (string.IsNullOrWhiteSpace(review.ReviewTitle))
+        {
+            OpenDialogOK("El título de la reseña es obligatorio.");
+            return false;
+        }
+        if (review.ReviewTitle.Length < 10 || review.ReviewTitle.Length > 100)
+        {
+            OpenDialogOK("El título debe tener entre 10 y 100 caracteres.");
+            return false;
+        }
+
+        // Validar cada ReviewItem
+        foreach (var item in review.ReviewItems)
+        {
+            // Rating debe estar entre 0 y 6
+            if (item.Rating < 1 || item.Rating > 5)
+            {
+                OpenDialogOK($"La calificación debe pertenecer al rango [1,5].");
+                return false;
+            }
+
+            // Comentario obligatorio y longitud entre 3 y 20
+            if (string.IsNullOrWhiteSpace(item.Comment))
+            {
+                OpenDialogOK($"Es obligatorio un comentario por cada dispositivo.");
+                return false;
+            }
+            if (item.Comment.Length < 20 || item.Comment.Length > 100)
+            {
+                OpenDialogOK($"Todos los comentarios deben tener entre 20 y 100 caracteres.");
+                return false;
+            }
+        }
+
+        return true; // Todo válido
+    }
+
+    private async Task OnDialogClose(bool isOk)
+    {
+        Console.WriteLine("Review process creation ended!");
+        Console.WriteLine($"CustomerName: '{review.CustomerName}'");
+
+
+        OkCancel = isOk;
+        DialogIsOpen = false;
+        if (!ValidateReview(review))
+        {
+            return; // Se mostró el primer error en un bocadillo
+        }
+        if (OkCancel)
+        {
+            if (string.IsNullOrWhiteSpace(review.CustomerCountry) || string.IsNullOrWhiteSpace(review.ReviewTitle))
+            {
+                OpenDialogOK("Please fill in both Customer Country and Review Title before submitting the review.");
+                return;
+            }
+            /*
+            foreach (ReviewItem reviewItem in review.ReviewItems)
+            {
+                if (string.IsNullOrWhiteSpace(reviewItem))
+                {
+
+                    }
+                }
+            */
+
+    if (review.ReviewItems.Count() > 0)
+            {
+                try
+                {
+                    var reviewDTO = new API.CreateReviewDTO()
+                    {
+                        CustomerId = review.CustomerId,
+                        ReviewTitle = review.ReviewTitle,
+                        CustomerCountry = review.CustomerCountry,
+                        CustomerName = string.IsNullOrWhiteSpace(review.CustomerName) ? null : review.CustomerName,
+                        DateOfReview = review.DateOfReview,
+                        ReviewItems = review.ReviewItems,
+                    };
+
+                    var result = await apiservice.CreateReviewAsync(reviewDTO);
+                    reviewState.ReviewProcessed();
+                    //Navigation.NavigateTo("/review/listdevicesforreview");
+                    Navigation.NavigateTo($"/review/reviewdetails/?reviewId={result.Id}");
+                }
+                catch (ApiException<ValidationProblemDetails> apiexceptionvalidation)
+                {
+                    string message = "Error while processing your request, please try again later!";
+                    if (apiexceptionvalidation.Result.Errors.Values != null)
+                    {
+                        message = "";
+                        foreach (var errors in apiexceptionvalidation.Result.Errors.Values)
+                            message = string.Join("(*) ", message, string.Join(" (*) ", errors));
+                    }
+                    OpenDialogOK(message);
+                }
+                catch (ApiException apiexception)
+                {
+                    OpenDialogOK("Error while processing your request, please try again later!");
+                }
+            }
+            else
+            {
+                OpenDialogOK("Please Insert at least one divice for the review");
+                return;
+            }
+        }
+    }
+
+    private bool DialogOKIsOpen;
+    private string DialogOKMessage;
+
+    private void OpenDialogOK(string message)
+    {
+        DialogOKIsOpen = true;
+        DialogOKMessage = message;
+    }
+
+    private async Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null && user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                // El ID del usuario está en la claim "sub" o "nameidentifier"
+                var userId = user.FindFirst("sub")?.Value
+                          ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    review.CustomerId = userId;
+                }
+                else
+                {
+                    Console.WriteLine("No se pudo obtener el ID del usuario.");
+                }
+            }
+        }
+    }
+
+
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+}
