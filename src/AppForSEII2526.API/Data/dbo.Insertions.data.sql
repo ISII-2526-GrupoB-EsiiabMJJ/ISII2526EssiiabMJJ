@@ -6,7 +6,7 @@ DELETE FROM [dbo].[Rental];
 DELETE FROM [dbo].[ReviewItems];
 DELETE FROM [dbo].[Device];
 DELETE FROM [dbo].[Review];
-DELETE FROM [dbo].[ApplicationUser];
+DELETE FROM [dbo].[AspNetUsers];
 DELETE FROM [dbo].[Model];
 
 -----------------------------------------------------------
@@ -24,16 +24,33 @@ VALUES
 SET IDENTITY_INSERT [dbo].[Model] OFF;
 
 -----------------------------------------------------------
--- USUARIOS
+-- USUARIOS (AspNetUsers)
 -----------------------------------------------------------
-
-INSERT INTO [dbo].[ApplicationUser]
-([Id], [Name], [Surname], [UserName], [Email], [AccessFailedCount], [EmailConfirmed], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnabled])
+INSERT INTO [dbo].[AspNetUsers]
+([Id], [Name], [Surname], [UserName], [NormalizedUserName],
+ [Email], [NormalizedEmail], [AccessFailedCount], [EmailConfirmed],
+ [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnabled],
+ [PasswordHash], [SecurityStamp], [ConcurrencyStamp])
 VALUES
-    ('1', 'Petru', 'Vlad', 'rumanoloKo', 'petru@email.com', 1, 1, 1, 1, 1),
-    ('2', 'Vlad', 'Vladislav', 'vladis', 'vlad@email.com', 1, 1, 1, 1, 1),
-    ('3', 'Mihai', 'Varcea', 'varicia', 'mihai@email.com', 1, 1, 1, 1, 1),
-    ('4', 'Jaime', 'de los campos', 'Jaime de los campos', 'jaime@email.com', 1, 1, 1, 1, 1);
+('1', 'Petru', 'Vlad', 'rumanoloKo', 'RUMANOLOKO',
+ 'petru@email.com', 'PETRU@EMAIL.COM', 1, 1,
+ 1, 1, 1,
+ NULL, NEWID(), NEWID()),
+
+('2', 'Vlad', 'Vladislav', 'vladis', 'VLADIS',
+ 'vlad@email.com', 'VLAD@EMAIL.COM', 1, 1,
+ 1, 1, 1,
+ NULL, NEWID(), NEWID()),
+
+('3', 'Mihai', 'Varcea', 'varicia', 'VARICIA',
+ 'mihai@email.com', 'MIHAI@EMAIL.COM', 1, 1,
+ 1, 1, 1,
+ NULL, NEWID(), NEWID()),
+
+('4', 'Jaime', 'de los campos', 'Jaime de los campos', 'JAIME DE LOS CAMPOS',
+ 'jaime@email.com', 'JAIME@EMAIL.COM', 1, 1,
+ 1, 1, 1,
+ NULL, NEWID(), NEWID());
 
 -----------------------------------------------------------
 -- RESEÑAS
@@ -43,7 +60,7 @@ SET IDENTITY_INSERT [dbo].[Review] ON;
 INSERT INTO [dbo].[Review] (
     [ReviewId],
     [CustomerId],
-    [ApplicationUserId],
+    [ApplicationUserId], -- ahora FK a AspNetUsers.Id
     [DateOfReview],
     [OverallRating],
     [ReviewTitle],
@@ -111,7 +128,7 @@ SET IDENTITY_INSERT [dbo].[Rental] ON;
 
 INSERT INTO [dbo].[Rental] (
     [Id],
-    [ApplicationUserId],
+    [ApplicationUserId], -- FK a AspNetUsers.Id
     [Name],
     [Surname],
     [DeliveryAddress],
@@ -124,7 +141,7 @@ INSERT INTO [dbo].[Rental] (
 VALUES
 (
     1,
-    (SELECT Id FROM [dbo].[ApplicationUser] WHERE UserName = 'Jaime de los campos'),
+    (SELECT Id FROM [dbo].[AspNetUsers] WHERE UserName = 'Jaime de los campos'),
     'Jaime',
     'de los campos',
     'Av. españa 31',

@@ -76,26 +76,26 @@ var app = builder.Build();
 //app.MapIdentityApi<IdentityUser>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-using (var scope = app.Services.CreateScope()) {
-    try {
-
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        //it creates the DB in case it does not exist
-        //this is used only while developing the system
         if (connection2Database == "SQLite")
             db.Database.EnsureCreated();
         else
             db.Database.Migrate();
 
-
-        //it sees the database
-        //SeedData.Initialize(db, scope.ServiceProvider, logger);
+        // Llamada al SeedData para crear usuario inicial
+        SeedData.Initialize(scope.ServiceProvider).GetAwaiter().GetResult();
     }
-    catch (Exception ex) {
+    catch (Exception ex)
+    {
         logger.LogError(ex, "An error occurred seeding the DB.");
     }
 }
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment()) {
