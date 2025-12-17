@@ -3,7 +3,7 @@ using AppForSEII2526.API.Models;
 
 namespace AppForSEII2526.API.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>//DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
@@ -31,7 +31,7 @@ namespace AppForSEII2526.API.Data
             builder.Entity<Review>().HasKey(x => x.ReviewId);
             builder.Entity<Model>().HasKey(x => x.Id);
             builder.Entity<Device>().HasKey(x => x.Id);
-            builder.Entity<RentDevice>().HasKey(x => new { x.DeviceId, x.RentalId });
+            builder.Entity<RentDevice>().HasKey(x => x.DeviceId);
             builder.Entity<Rental>().HasKey(x => x.Id);
             builder.Entity<Scale>().HasKey(x => x.Id);
             builder.Entity<Repair>().HasKey(x => x.Id);
@@ -59,8 +59,8 @@ namespace AppForSEII2526.API.Data
 
             builder.Entity<Receipt>()
                 .HasOne(r => r.ApplicationUser)
-                .WithMany(u => u.Receipts)     
-                .HasForeignKey(r => r.ApplicationUserId) 
+                .WithMany(u => u.Receipts)
+                .HasForeignKey(r => r.ApplicationUserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
@@ -82,7 +82,7 @@ namespace AppForSEII2526.API.Data
 
             builder.Entity<PurchaseItem>()
                 .HasOne(pi => pi.Device)
-                .WithMany() 
+                .WithMany()
                 .HasForeignKey(pi => pi.DeviceId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
@@ -110,15 +110,17 @@ namespace AppForSEII2526.API.Data
 
 
             builder.Entity<RentDevice>()
-                .HasOne(rd => rd.Device)
+                .HasOne(ri => ri.Device)
                 .WithMany(d => d.RentedDevices)
-                .HasForeignKey(rd => rd.DeviceId)
+                .HasForeignKey(ri => ri.DeviceId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<RentDevice>()
-                .HasOne(rd => rd.Rent)
-                .WithMany(r => r.RentalItems)
-                .HasForeignKey(rd => rd.RentalId)
+                .HasOne(ri => ri.Device)
+                .WithMany(r => r.RentedDevices)
+                .HasForeignKey(ri => ri.DeviceId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Rental>()

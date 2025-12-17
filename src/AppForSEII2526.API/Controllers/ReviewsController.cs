@@ -1,7 +1,6 @@
 ﻿using AppForSEII2526.API.DTOs;
-using AppForSEII2526.API.DTOs.ReviewDTOs;
+using AppForSEII2526.API.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using NuGet.Protocol;
 using System.Linq;
@@ -94,7 +93,6 @@ namespace AppForSEII2526.API.Controllers
                     ModelState.AddModelError("ReviewItems", "You must rate every chosen device for this review.");
                     return BadRequest(new ValidationProblemDetails(ModelState));
                 }
-
                 reviewDevicesCounter++;
                 ratingCounter += item.Rating;
                 var device = await _context.Device
@@ -104,7 +102,6 @@ namespace AppForSEII2526.API.Controllers
                 if (device == null)
                 {
                     ModelState.AddModelError("Device", $"El dispositivo con ID {item.DeviceId} no existe.");
-
                 }
                 else
                 {
@@ -115,20 +112,6 @@ namespace AppForSEII2526.API.Controllers
                         Device = device
                     });
                 }
-                ////////////////////////
-                ///////////////
-                ///////////////
-                ///////////////
-                /////////////// MODIFICACION DEL POST PARA LA EVALUACION
-                ///////////////
-                ///////////////
-                ///////////////
-                if (item.Comment == null || !item.Comment.StartsWith("Reseña para"))
-                {
-                    ModelState.AddModelError("Review", "Error, el comentario de la reseña: debe empezar por Reseña para");
-                    return BadRequest(new ValidationProblemDetails(ModelState));
-                }
-
             }
 
             int overallRatingCalculated = ratingCounter / reviewDevicesCounter;
@@ -171,6 +154,5 @@ namespace AppForSEII2526.API.Controllers
 
             return CreatedAtAction("ReviewDetails", new { id = newReview.ReviewId }, reviewDTO);
         }
-
     }
 }

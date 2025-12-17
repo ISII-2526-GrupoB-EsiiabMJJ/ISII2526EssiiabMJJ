@@ -21,9 +21,14 @@ namespace AppForSEII2526.API.DTOs.ReviewDTOs
         }
         public int DeviceId { get; set; }
         public int Year { get; set; }
+
+        [Required(ErrorMessage = "La calificación es obligatoria")]
+        [Range(1, 5, ErrorMessage = "La calificación debe estar en el rango [1,5]")]
         public int Rating { get; set; }
         public string Name { get; set; }
         public string Model { get; set; }
+        [Required(ErrorMessage = "El comentario es obligatorio")]
+        [StringLength(100, MinimumLength = 20, ErrorMessage = "El comentario debe tener entre 20 y 100 caracteres")]
         public string Comment { get; set; }
 
         public override bool Equals(object? obj)
