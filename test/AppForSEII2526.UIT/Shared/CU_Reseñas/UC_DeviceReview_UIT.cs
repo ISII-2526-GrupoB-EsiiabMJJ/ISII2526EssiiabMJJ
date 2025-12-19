@@ -49,7 +49,7 @@ namespace AppForSEII2526.UIT.CU_Reseñas
             new string[] {
                 "RTX 4090 Dual Ultimate",
                 "NVIDIA GeForce RTX 4090",
-                "2024","4","Random comment for test"},
+                "2024","5","Random comment for test"}, //modified mark 4 by 5 to pass sprint 3 functional test change
             new string[] {
                 "RTX 5080 Gaming Pro",
                 "NVIDIA GeForce RTX 5080",
@@ -78,7 +78,101 @@ namespace AppForSEII2526.UIT.CU_Reseñas
             selectDeviceForReview_PO.WaitForBeingVisible(By.Id("devicesTable"));
             selectDeviceForReview_PO.WaitForBeingClickable(By.Id("devicesTable"));
         }
+        //ReviwedDevices
+        [Fact]
+        [Trait("Level Testing", "Function Testing")]
+        public void UC3_CAMBIO_EXAMEN_BF_AF0_AF1()
+        {
+            string? customerName = "Petru Vlad";
+            string customerCountry = "Rumania";
+            string reviewTitle = "Perfect GPU for Blender design";
+            string deviceRating = "5";
+            string deviceComment = "Random comment for test";
+            List<string> devicesList = new List<string> {
+                chosedDevices[0]
+            };
+            InitialStepsForDeviceReview();
 
+
+            //search all devices
+            selectDeviceForReview_PO.SearchDevices("", "");
+            //select chosen devices without filter use
+            foreach (var deviceName in devicesList)
+            {
+                selectDeviceForReview_PO.clickButton(By.Id("device_to_add_" + deviceName));
+            }
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+            ///////////////////   Change 1   //////////////////
+            //generate new list of selected device alfter filter apply.
+            selectDeviceForReview_PO.SearchDevices("MSI", "");
+            List<string> deviceFiltered = new List<string> {
+                //chosedDevices[0]//before change
+                chosedDevices[2]// here we changed the index information of the review done to show the data of the filtered device chosen, not the first device
+                //chosen without filler apply as defult.
+            };
+            //select chosen devices after filter use
+            foreach (var deviceName in deviceFiltered)
+            {
+                selectDeviceForReview_PO.clickButton(By.Id("device_to_add_" + deviceName));
+            }
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+            ///////////////////   Change 2   //////////////////
+            ///
+            selectDeviceForReview_PO.SearchDevices("", "");// we filtered by brand MSI, but the firts device chosen without filter is an NVIDIA
+            //so....to remove the first added device to cart we must apply a new filter as NVIDIA as brand and null year or directly with empty imputs
+            //remove first chosen device
+            foreach (var deviceName in devicesList) {
+                selectDeviceForReview_PO.WaitForBeingClickable(By.Id("device_to_remove_" + deviceName));
+                selectDeviceForReview_PO.clickButton(By.Id("device_to_remove_" + deviceName));
+            }
+            /////////////////////////////////////////////////
+            /////////////////////////////////////////////////
+
+            //click creare review to redirect to next route
+            selectDeviceForReview_PO.clickButton(By.Id(createReviewButton));
+
+            createReview_PO.FillInReviewInfo(customerName, customerCountry, reviewTitle);
+            //createReview.FillDeviceRating(deviceRating);
+            foreach (var deviceName in deviceFiltered) // we changed 
+            {
+                //wait the rating input to be visible
+                selectDeviceForReview_PO.WaitForBeingVisible(By.Id("rating_" + deviceName));
+                //add 5 as mark for each device
+                createReview_PO.FillDeviceRating(deviceRating, "rating_" + deviceName);
+                //wait the comment input to be visible
+                selectDeviceForReview_PO.WaitForBeingVisible(By.Id("comment_" + deviceName));
+                //add comment for each device
+                createReview_PO.FillDeviceComment(deviceComment, "comment_" + deviceName);
+            }
+            //pulsar crear reseña
+            selectDeviceForReview_PO.clickButton(By.Id(endReviewButton));
+
+
+
+            // eeperamos mensaje de si estamos seguros de continuar
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+            // Wait for clicable
+            wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".modal-dialog")));
+            string confirmMessage = _driver.FindElement(By.CssSelector(".modal-dialog .modal-body")).Text;
+            // Click continue
+            _driver.FindElement(By.Id("Button_DialogOK")).Click();
+
+
+            bool areEquals = reviewDetails_PO.CheckReviewDetail(
+                customerName,
+                customerCountry,
+                reviewTitle,
+                new List<string[]> { reviewedDeviceList[2] },//modified reviewedDeviceList[0] by reviewedDeviceList[2]
+                By.Id("ReviwedDevices"));
+
+            // Assert
+            Assert.True(areEquals);
+
+        }
 
         //ReviwedDevices
         [Fact]
