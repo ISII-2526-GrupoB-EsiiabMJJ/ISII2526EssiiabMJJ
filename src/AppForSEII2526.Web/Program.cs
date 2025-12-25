@@ -38,6 +38,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 //incorporacion de ReviewStateContainer
 builder.Services.AddScoped<ReviewStateContainer>();
+//incorporacion de RentalStateContainer
+builder.Services.AddScoped<RentalStateContainer>();
 //incorporacion del clientAPI
 builder.Services.AddHttpClient(); // Registra el HttpClientFactory
 
