@@ -1,0 +1,263 @@
+﻿@page "/rent/listdevicesforrenting"
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.Web.Components.Pages
+@using Microsoft.AspNetCore.Authorization
+
+@inject ILogger<ListDevicesForRenting> logger
+@inject AppForSEII2526APIClient apiservice
+@inject RentalStateContainer rentalState
+@inject NavigationManager navigation
+
+@attribute [Authorize]
+
+<h3>>Seleccionar Dispositivos Para Alquiler</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-flex justify-content-between">
+            <div><b>Devices Selected:</b> @rental.RentalItems.Count</div>
+            <div><b>Days for renting:</b> @DaysForRental </div>
+            <button class="btn btn-primary"
+                    id="Rent"
+                    @onclick="RentDevices"
+                    disabled="@RentButtonDisabled">
+                Rent devices
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <button class="btn btn-outline-primary"
+                id="showRentingCart"
+                @onclick="ToggleRentingCart">
+            Renting Cart: @rental.TotalPrice €
+        </button>
+    </div>
+
+    <div class="row" hidden="@hiddenRentingCart">
+        @foreach (RentalItemDTO item in rental.RentalItems)
+        {
+            <RentalItem Item="item"
+                        OnRemovedItem="@(() => RemoveRentalItem(item))" />
+        }
+    </div>
+
+    <div class="row">
+        <p></p>
+        <h5>Filter Devices</h5>
+        <div class="input-group">
+
+            <div class="input-group-prepend">
+                <span class="input-group-text">Model</span>
+            </div>
+            <input type="text"
+                   class="form-control"
+                   @bind="deviceModel"
+                   id="deviceModel">
+
+            <div class="input-group-prepend">
+                <span class="input-group-text">Max Price</span>
+            </div>
+            <input type="number"
+                   class="form-control"
+                   @bind="maxRentalPrice"
+                   id="maxRentalPrice">
+
+            <div class="input-group-prepend">
+                <span class="input-group-text">From</span>
+            </div>
+            <InputDate @bind-Value="From" id="fromDate" />
+
+            <div class="input-group-prepend">
+                <span class="input-group-text">To</span>
+            </div>
+            <InputDate @bind-Value="To" id="toDate" />
+
+            <div class="input-group-append">
+                <button class="btn btn-outline-primary"
+                        id="searchDevices"
+                        @onclick="SearchDevices">
+                    Search available devices
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <div class="container-fluid">
+            @if (Devices.Count() == 0)
+            {
+                <p><em>There are no devices available for being rented</em></p>
+            }
+            else
+            {
+                <div class="mh-100 table-responsive">
+                    <table class="table table-condensed table-hover" id="TableOfDevices">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Model</th>
+                                <th>Brand</th>
+                                <th>Year</th>
+                                <th>Color</th>
+                                <th>Rental Price</th>
+                                <th>Rent</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var device in Devices)
+                            {
+                                <tr id="DeviceData_@device.Model">
+                                    <td>@device.Name</td>
+                                    <td>@device.Model</td>
+                                    <td>@device.Brand</td>
+                                    <td>@device.Year</td>
+                                    <td>@device.Color</td>
+                                    <td>@device.PriceForRent</td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary"
+                                                id="deviceToRent_@device.Model"
+                                                @onclick="@(() => AddDevice(device))">
+                                            Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private bool DialogOKIsOpen;
+    private string DialogOKMessage;
+
+    private void OpenDialogOK(string message)
+    {
+        DialogOKIsOpen = true;
+        DialogOKMessage = message;
+    }
+
+    private Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+        return Task.CompletedTask;
+    }
+
+    private bool hiddenRentingCart = true;
+
+    private void ToggleRentingCart()
+    {
+        hiddenRentingCart = !hiddenRentingCart;
+    }
+
+    private ICollection<DeviceRentalDTO> Devices { get; set; }
+        = new List<DeviceRentalDTO>();
+
+    private string deviceBrand;
+    private string deviceModel;
+    private decimal? maxRentalPrice;
+
+    private DateTime _from;
+    private DateTime From
+    {
+        get => _from;
+        set
+        {
+            if (_from != value)
+            {
+                _from = value;
+                rental.RentalDateFrom = DateTime.SpecifyKind(_from, DateTimeKind.Utc);
+                rentalState.ClearRentingCart();
+            }
+        }
+    }
+
+    private DateTime _to;
+    private DateTime To
+    {
+        get => _to;
+        set
+        {
+            if (_to != value)
+            {
+                _to = value;
+                rental.RentalDateTo = DateTime.SpecifyKind(_to, DateTimeKind.Utc);
+                rentalState.ClearRentingCart();
+            }
+        }
+    }
+
+    private RentalForCreateDTO rental => rentalState.Rental;
+
+    private int DaysForRental =>
+        (rental.RentalDateTo - rental.RentalDateFrom).Days;
+
+    private bool RentButtonDisabled =>rental.RentalItems.Count == 0;
+
+    private void AddDevice(DeviceRentalDTO device)
+    {
+        var item = new RentalItemDTO
+            {
+                DeviceID = device.Id,
+                Description = $"{device.Brand} {device.Model}",
+                PriceForRent = device.PriceForRent
+            };
+
+        rentalState.RemoveRentalItemToRent(item);
+    }
+
+    private void RemoveRentalItem(RentalItemDTO item)
+    {
+        rentalState.RemoveRentalItemToRent(item);
+        if (rental.RentalItems.Count == 0)
+            hiddenRentingCart = true;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _from = DateTime.SpecifyKind(DateTime.Today.AddDays(1), DateTimeKind.Utc);
+        _to = DateTime.SpecifyKind(DateTime.Today.AddDays(2), DateTimeKind.Utc);
+
+        rental.RentalDateFrom = _from;
+        rental.RentalDateTo = _to;
+
+        await SearchDevices();
+    }
+
+    protected async Task SearchDevices()
+    {
+        if (rental.RentalDateFrom > rental.RentalDateTo)
+        {
+            OpenDialogOK("Your rental must end after it starts");
+            return;
+        }
+
+        if (rental.RentalDateFrom < DateTime.Today ||
+            rental.RentalDateTo < DateTime.Today)
+        {
+            OpenDialogOK("Your rental period must be later");
+            return;
+        }
+
+        try
+        {
+            Devices = await apiservice.GetDeviceForRentalAsync(deviceBrand, deviceModel);
+        }
+        catch (ApiException ex)
+        {
+            Devices = new List<DeviceRentalDTO>();
+            logger.LogError("Error! There was an error while connecting to the GetDeviceForRentalAsync service");
+        }
+
+        StateHasChanged();
+    }
+
+    private void RentDevices()
+    {
+        navigation.NavigateTo("/rentals/createdevice");
+    }
+}
