@@ -1,0 +1,215 @@
+﻿@page "/rentals/createrental"
+@using AppForSEII2526.Web.API
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using System.Text.Json
+@inject AppForSEII2526.Web.API.AppForSEII2526APIClient apiservice
+
+
+@inject RentalStateContainer rentalState
+@inject NavigationManager Navigation
+
+@attribute [Authorize]
+
+<h3>Rental</h3>
+<EditForm Model="rental" OnValidSubmit="OpenDialog">
+    @*it checks user's inputs such as required attributes, that were defined in PurchaseForCreateDTO*@
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="row g-2">
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="rental.CustomerNameSurname" class="form-control" id="NameSurname" />
+                <label for="NameSurname">Name and Surname</label>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="rental.DeliveryAddress" class="form-control" id="DeliveryAddress" />
+                <label for="DeliveryAddress">Delivery Address</label>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="form-floating">
+                @*a dropdown for selecting the payment method*@
+                <InputSelect class="form-select" @bind-Value="@rental.PaymentMethod" id="PaymentMethod">
+                    <option value="@PaymentMethodTypes.CreditCard" default> CreditCard</option>
+                    <option value="@PaymentMethodTypes.PayPal"> PayPal</option>
+                    <option value="@PaymentMethodTypes.Cash"> Cash</option>
+                </InputSelect>
+                <label for="PaymentMethod">Metodo de Pago</label>
+            </div>
+        </div>
+        <div class="col-md">
+            <div class="form-floating">
+                @*this button will be disabled if there are no movies in the shopping cart*@
+                <button class="btn btn-primary" type="submit" id="Submit">
+                    Alquila tus dispositivos
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+<p></p>
+<h4>Detalles del alquiler</h4>
+<p><b>Date from:</b> @rental.RentalDateFrom.ToString("dd/MM/yyyy") <b>to:</b> @rental.RentalDateTo.ToString("dd/MM/yyyy")</p>
+<p>
+    <b>Total price:</b> @rental.TotalPrice €
+    <button class="btn btn-outline-primary" type="submit" @onclick="ModifyRentalItems" id="ModifyMovies">
+        Modify movies
+    </button>
+</p>
+<div class="mh-100 table-responsive">
+    <table class="table table-condensed table-hover" id="TableOfRentalItems">
+        <thead>
+            <tr>
+                <th>DeviceID</th>
+                <th>Model</th>
+                <th>Price For Rent</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (RentalItemDTO item in rental.RentalItems)
+            {
+                <tr id="RentalItem_@item.DeviceID">
+                    <td>@item.Model</td>
+                    <td>@item.PriceForRent €</td>
+                    <td>@item.Description</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+@*a modal popup dialog for checking if user wants to proceed to purchase*@
+@if (DialogIsOpen)
+{
+    <Dialog Caption="Rental devices"
+            Message="Do you want to proceed to rent the selected devices?"
+            OnClose="@OnDialogClose"
+            Type=Dialog.Category.SaveNot>
+    </Dialog>
+}
+@*this is a another modal popup dialog to inform user about problems*@
+@if (DialogOKIsOpen)
+{
+    <Dialog Caption="Error!"
+            Message="@DialogOKMessage"
+            OnClose="@OnDialogOKClose"
+            Type=Dialog.Category.Okay>
+    </Dialog>
+}
+
+
+@code {
+    private RentalForCreateDTO rental => rentalState.Rental;
+
+    private bool DialogIsOpen;
+    private bool OkCancel = false; //ok=true cancel=false
+    private void OpenDialog()
+    {
+        DialogIsOpen = true;
+    }
+
+    private void ModifyRentalItems()
+    {
+        Navigation.NavigateTo("/rentals/listdevicesforrenting");
+    }
+
+    private async Task OnDialogClose(bool isOk)
+    {
+
+
+        OkCancel = isOk;
+        DialogIsOpen = false;
+        if (OkCancel)
+        {
+            // Process the data introduced by the user if they are valid
+            if (rental.RentalItems.Count() > 0)
+            {
+                try
+                {
+                    AppForSEII2526.Web.API.RentalForCreateDTO rentalDTO = new API.RentalForCreateDTO()
+                        {
+                            CustomerNameSurname = rental.CustomerNameSurname,
+                            CustomerUserName = rental.CustomerUserName,
+                            DeliveryAddress = rental.DeliveryAddress,
+                            PaymentMethod = (API.PaymentMethodTypes)rental.PaymentMethod,
+                            RentalDateFrom = rental.RentalDateFrom,
+                            RentalDateTo = rental.RentalDateTo,
+                            RentalItems = rental.RentalItems.Select(ri => new API.RentalItemDTO()
+                            {
+                                DeviceID = ri.DeviceID,
+                                Model = ri.Model,
+                                PriceForRent = ri.PriceForRent,
+                                Description = ri.Description
+                            }
+                            ).ToList(),
+                        };
+                    var rented = await apiservice.CreateRentalAsync(rentalDTO);
+                    rentalState.RentalProcessed();
+                    Navigation.NavigateTo($"/rentals/detailrental/?RentalID={rented.Id}");
+                }
+                catch (AppForSEII2526.Web.API.ApiException<AppForSEII2526.Web.API.ValidationProblemDetails> apiexceptionvalidation)
+                {
+                    //we need to inform user that there was a 400 error
+                    string message = "Error while processing your request, please try again later!";
+
+                    if (apiexceptionvalidation.Result.Errors.Values != null)
+                    {
+                        message = "";
+                        foreach (var errors in apiexceptionvalidation.Result.Errors.Values)
+                            message = string.Join("(*) ", message, string.Join(" (*) ", errors));
+                    }
+                    OpenDialogOK(message);
+                }
+                catch (AppForSEII2526.Web.API.ApiException apiexception)
+                {
+                    //we need to inform user that there was some other error while processing the request
+                    string message = "Error while processing your request, please try again later!";
+                    OpenDialogOK(message);
+                }
+            }
+        }
+    }
+
+    private bool DialogOKIsOpen;
+    private string DialogOKMessage;
+    private void OpenDialogOK(string message)
+    {
+        DialogOKIsOpen = true;
+        DialogOKMessage = message;
+    }
+    private async Task OnDialogOKClose()
+    {
+        DialogOKIsOpen = false;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user is not null)
+            {
+                if (user.Identity is not null && user.Identity.IsAuthenticated)
+                {
+                    rental.CustomerUserName = user.Identity.Name;
+                }
+            }
+        }
+    }
+
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+
+}
