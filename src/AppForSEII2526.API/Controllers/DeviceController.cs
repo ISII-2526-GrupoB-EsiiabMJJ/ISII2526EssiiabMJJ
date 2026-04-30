@@ -1,4 +1,5 @@
 ﻿using AppForSEII2526.API.DTOs.DeviceDTOs.DevideRentalDTOs;
+using AppForSEII2526.API.DTOs.DevicesDTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -93,6 +94,43 @@ namespace AppForSEII2526.API.Controllers
                     d.Model.NameModel,
                     d.Color,
                     d.Brand))
+                .ToListAsync();
+
+            return Ok(devices);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        [ProducesResponseType(typeof(IList<DeviceForPurchaseDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IList<DeviceForPurchaseDTO>>> GetDevicesForPurchase(
+            string? name,
+            string? color)
+        {
+            if (!string.IsNullOrEmpty(name))
+                name = name.Trim().ToLower();
+
+            if (!string.IsNullOrEmpty(color))
+                color = color.Trim().ToLower();
+
+            var query = _context.Device
+                .Include(d => d.Model)
+                .Where(d => d.quantityForPurchase > 0);
+
+            if (!string.IsNullOrWhiteSpace(name))
+                query = query.Where(d => d.Name.ToLower().Contains(name));
+
+            if (!string.IsNullOrWhiteSpace(color))
+                query = query.Where(d => d.Color.ToLower().Contains(color));
+
+            var devices = await query
+                .OrderBy(d => d.Name)
+                .Select(d => new DeviceForPurchaseDTO(
+                    d.Id,
+                    d.Name,
+                    d.priceForPurchase,
+                    d.Brand,
+                    d.Model.NameModel,
+                    d.Color))
                 .ToListAsync();
 
             return Ok(devices);
