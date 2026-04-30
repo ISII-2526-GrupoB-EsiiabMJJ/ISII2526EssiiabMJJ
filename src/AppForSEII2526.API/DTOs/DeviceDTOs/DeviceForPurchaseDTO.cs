@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AppForSEII2526.API.DTOs.DevicesDTO
+namespace AppForSEII2526.API.DTOs.DeviceDTOs
 {
     public class DeviceForPurchaseDTO   
     {

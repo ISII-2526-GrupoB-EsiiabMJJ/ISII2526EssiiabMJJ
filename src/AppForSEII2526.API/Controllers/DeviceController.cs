@@ -1,5 +1,5 @@
 ﻿using AppForSEII2526.API.DTOs.DeviceDTOs.DevideRentalDTOs;
-using AppForSEII2526.API.DTOs.DevicesDTO;
+using AppForSEII2526.API.DTOs.DeviceDTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
