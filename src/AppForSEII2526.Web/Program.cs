@@ -40,6 +40,8 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddScoped<ReviewStateContainer>();
 //incorporacion de RentalStateContainer
 builder.Services.AddScoped<RentalStateContainer>();
+//incorporacion de PurchaseStateContainer
+builder.Services.AddScoped<PurchaseStateContainer>();
 //incorporacion del clientAPI
 builder.Services.AddHttpClient(); // Registra el HttpClientFactory
 
