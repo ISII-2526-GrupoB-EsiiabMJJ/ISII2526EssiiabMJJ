@@ -23,8 +23,16 @@
            placeholder="Buscar por color" />
 </div>
 
-<button class="btn btn-primary mb-3" @onclick="SearchDevices">
+<button id="searchDevicesButton"
+        class="btn btn-primary mb-3"
+        @onclick="SearchDevices">
     Buscar
+</button>
+
+<button id="clearDeviceFiltersButton"
+        class="btn btn-secondary mb-3 ms-2"
+        @onclick="ClearFilters">
+    Limpiar filtros
 </button>
 
 @if (IsLoading)
@@ -152,7 +160,15 @@ else
 
         try
         {
-            Devices = await ApiClient.GetDevicesForPurchaseAsync(DeviceNameFilter, ColorFilter);
+            var name = string.IsNullOrWhiteSpace(DeviceNameFilter)
+                ? null
+                : DeviceNameFilter.Trim();
+
+            var color = string.IsNullOrWhiteSpace(ColorFilter)
+                ? null
+                : ColorFilter.Trim();
+
+            Devices = await ApiClient.GetDevicesForPurchaseAsync(name, color);
         }
         catch (Exception ex)
         {
@@ -185,5 +201,12 @@ else
     public void Dispose()
     {
         PurchaseState.OnChange -= StateHasChanged;
+    }
+
+    private async Task ClearFilters()
+    {
+        DeviceNameFilter = null;
+        ColorFilter = null;
+        await SearchDevices();
     }
 }
