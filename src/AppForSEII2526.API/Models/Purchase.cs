@@ -9,7 +9,8 @@ namespace AppForSEII2526.API.Models
 
         public Purchase(
             string customerUserName,
-            string customerNameSurname,
+            string name,
+            string surname,
             ApplicationUser applicationUser,
             string deliveryAddress,
             DateTime purchaseDateUtc,
@@ -19,7 +20,8 @@ namespace AppForSEII2526.API.Models
             ApplicationUser = applicationUser ?? throw new ArgumentNullException(nameof(applicationUser));
 
             CustomerUserName = customerUserName;
-            CustomerNameSurname = customerNameSurname;
+            Name = name;
+            Surname = surname;
             DeliveryAddress = deliveryAddress;
             PurchaseDateUtc = purchaseDateUtc;
             Items = items ?? new List<PurchaseItem>();
@@ -31,13 +33,14 @@ namespace AppForSEII2526.API.Models
         public Purchase(
             int id,
             string customerUserName,
-            string customerNameSurname,
+            string name,
+            string surname,
             ApplicationUser applicationUser,
             string deliveryAddress,
             DateTime purchaseDateUtc,
             IList<PurchaseItem> items,
             PaymentMethod paymentMethod)
-            : this(customerUserName, customerNameSurname, applicationUser, deliveryAddress, purchaseDateUtc, items, paymentMethod)
+            : this(customerUserName, name, surname, applicationUser, deliveryAddress, purchaseDateUtc, items, paymentMethod)
         {
             Id = id;
         }
@@ -45,8 +48,9 @@ namespace AppForSEII2526.API.Models
         [Key] public int Id { get; set; }
 
         [Required] public string CustomerUserName { get; set; } = string.Empty;
-        [Required] public string CustomerNameSurname { get; set; } = string.Empty;
-
+        [Required, MaxLength(50)] public string Name { get; set; } = string.Empty;
+        [Required, MaxLength(50)] public string Surname { get; set; } = string.Empty;
+  
         [Required] public string ApplicationUserId { get; set; } = string.Empty;
 
         public ApplicationUser ApplicationUser { get; set; } = default!;
