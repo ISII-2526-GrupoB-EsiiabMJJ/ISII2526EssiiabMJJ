@@ -116,9 +116,12 @@ namespace AppForSEII2526.API.Controllers
             {
                 var device = devices.FirstOrDefault(m => m.NameModel.Equals(item.Model));
                 //we must check that there is enough quantity to be rented in the database
+                Console.WriteLine("Numero de dispositivos NumberOfRentedItems:", device.NumberOfRentedItems);
+                Console.WriteLine("Cantidad  de dispositivos quantityForRent:", device.quantityForRent);
+             
                 if ((device == null) || (device.NumberOfRentedItems >= device.quantityForRent))
                 {
-                    ModelState.AddModelError("RentalItems", $"Error! Movie titled '{item.Model}' is not available for being rented from {rentalForCreate.RentalDateFrom.ToShortDateString()} to {rentalForCreate.RentalDateTo.ToShortDateString()}");
+                    ModelState.AddModelError("RentalItems", $"Error! Device Model '{item.Model}' is not available for being rented from {rentalForCreate.RentalDateFrom.ToShortDateString()} to {rentalForCreate.RentalDateTo.ToShortDateString()}");
                 }
                 else
                 {

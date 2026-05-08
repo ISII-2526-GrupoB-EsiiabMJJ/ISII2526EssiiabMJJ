@@ -14,11 +14,10 @@ namespace AppForSEII2526.API.Data
             using var scope = serviceProvider.CreateScope();
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // Verifica si el usuario ya existe
-            var existingUser = await userManager.FindByEmailAsync("Petruvladpasa@gmail.com");
-            if (existingUser == null)
+            var existingUser1 = await userManager.FindByEmailAsync("Pasatpetruvlad@gmail.com");
+            if (existingUser1 == null)
             {
-                var user = new ApplicationUser
+                var user1 = new ApplicationUser
                 {
                     UserName = "Pasatpetruvlad@gmail.com",
                     Email = "Pasatpetruvlad@gmail.com",
@@ -27,12 +26,33 @@ namespace AppForSEII2526.API.Data
                     EmailConfirmed = true
                 };
 
-                var result = await userManager.CreateAsync(user, "Pepe_0114");
+                var result1 = await userManager.CreateAsync(user1, "Pepe_0114");
 
-                if (!result.Succeeded)
+                if (!result1.Succeeded)
                 {
-                    throw new Exception("Error creando el usuario inicial: " +
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                    throw new Exception("Error creando el usuario Petru: " +
+                        string.Join(", ", result1.Errors.Select(e => e.Description)));
+                }
+            }
+
+            var existingUser2 = await userManager.FindByEmailAsync("jaime@uclm.es");
+            if (existingUser2 == null)
+            {
+                var user2 = new ApplicationUser
+                {
+                    UserName = "jaime@uclm.es",
+                    Email = "jaime@uclm.es",
+                    Name = "Jaime",
+                    Surname = "Catedra",
+                    EmailConfirmed = true
+                };
+
+                var result2 = await userManager.CreateAsync(user2, "Aa123456789@");
+
+                if (!result2.Succeeded)
+                {
+                    throw new Exception("Error creando el usuario Jaime: " +
+                        string.Join(", ", result2.Errors.Select(e => e.Description)));
                 }
             }
         }

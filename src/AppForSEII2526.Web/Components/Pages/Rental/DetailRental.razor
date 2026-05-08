@@ -1,8 +1,8 @@
-﻿@page "/rentails/detailrental"
+﻿@page "/rentals/detailrental"
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
 @inject AppForSEII2526APIClient apiservice
-
+@inject RentalStateContainer rentalState
 @attribute [Authorize]
 
 <h3>Rental</h3>
@@ -50,6 +50,7 @@ else
             @foreach (RentalItemDTO item in rental.RentalItems)
             {
                 <tr id="RentalItem_@item.DeviceID">
+                    <td>@item.DeviceID</td>
                     <td>@item.Model</td>
                     <td>@item.PriceForRent €</td>
                     <td>@item.Description</td>

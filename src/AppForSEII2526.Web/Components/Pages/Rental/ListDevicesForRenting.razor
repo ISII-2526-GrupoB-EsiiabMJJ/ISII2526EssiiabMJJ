@@ -10,7 +10,7 @@
 
 @attribute [Authorize]
 
-<h3>>Seleccionar Dispositivos Para Alquiler</h3>
+<h3>Seleccionar Dispositivos Para Alquiler</h3>
 <div class="container-fluid">
     <div class="row">
         <div class="d-flex justify-content-between">
@@ -20,7 +20,7 @@
                     id="Rent"
                     @onclick="RentDevices"
                     disabled="@RentButtonDisabled">
-                Rent devices
+                Alquilar dispositivos
             </button>
         </div>
     </div>
@@ -29,7 +29,7 @@
         <button class="btn btn-outline-primary"
                 id="showRentingCart"
                 @onclick="ToggleRentingCart">
-            Renting Cart: @rental.TotalPrice €
+            Renting Cart: @rentalState.TotalPrice €
         </button>
     </div>
 
@@ -37,7 +37,7 @@
         @foreach (RentalItemDTO item in rental.RentalItems)
         {
             <RentalItem Item="item"
-                        OnRemovedItem="@(() => RemoveRentalItem(item))" />
+                        OnRemovedItem="@(() => RemoveDeviceFromItem(item))" />
         }
     </div>
 
@@ -91,7 +91,7 @@
             else
             {
                 <div class="mh-100 table-responsive">
-                    <table class="table table-condensed table-hover" id="TableOfDevices">
+                    <table class="table table-condensed table-hover" id="devicesTable">
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -115,9 +115,16 @@
                                     <td>@device.PriceForRent</td>
                                     <td>
                                         <button class="btn btn-outline-secondary"
-                                                id="deviceToRent_@device.Model"
+                                                id="deviceToAdd_@device.Model"
                                                 @onclick="@(() => AddDevice(device))">
                                             Add
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary"
+                                                id="deviceToRemove_@device.Model"
+                                                @onclick="@(() => RemoveDevice(device))">
+                                            Remove
                                         </button>
                                     </td>
                                 </tr>
@@ -171,7 +178,6 @@
             {
                 _from = value;
                 rental.RentalDateFrom = DateTime.SpecifyKind(_from, DateTimeKind.Utc);
-                rentalState.ClearRentingCart();
             }
         }
     }
@@ -186,7 +192,6 @@
             {
                 _to = value;
                 rental.RentalDateTo = DateTime.SpecifyKind(_to, DateTimeKind.Utc);
-                rentalState.ClearRentingCart();
             }
         }
     }
@@ -204,26 +209,59 @@
             {
                 DeviceID = device.Id,
                 Description = $"{device.Brand} {device.Model}",
-                PriceForRent = device.PriceForRent
+                PriceForRent = device.PriceForRent,
+                Model = device.Model
             };
 
-        rentalState.RemoveRentalItemToRent(item);
+        var rentalToAdd = new RentalForCreateDTO
+            {
+                RentalItems = new List<RentalItemDTO> { item }
+            };
+
+        rentalState.AddDeviceToRental(rentalToAdd);
     }
 
-    private void RemoveRentalItem(RentalItemDTO item)
+    private void RemoveDeviceFromItem(RentalItemDTO item)
     {
         rentalState.RemoveRentalItemToRent(item);
+
+        if (rental.RentalItems.Count == 0)
+            hiddenRentingCart = true;
+    }
+    private void RemoveDevice(DeviceRentalDTO device)
+    {
+        var item = rental.RentalItems
+            .FirstOrDefault(ri => ri.DeviceID == device.Id);
+
+        if (item != null)
+        {
+            rentalState.RemoveRentalItemToRent(item);
+        }
+
         if (rental.RentalItems.Count == 0)
             hiddenRentingCart = true;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        _from = DateTime.SpecifyKind(DateTime.Today.AddDays(1), DateTimeKind.Utc);
-        _to = DateTime.SpecifyKind(DateTime.Today.AddDays(2), DateTimeKind.Utc);
+        if (rental.RentalDateFrom == default(DateTimeOffset))
+        {
+            rental.RentalDateFrom = new DateTimeOffset(
+                DateTime.SpecifyKind(
+                    DateTime.Today.AddDays(1),
+                    DateTimeKind.Utc));
+        }
 
-        rental.RentalDateFrom = _from;
-        rental.RentalDateTo = _to;
+        if (rental.RentalDateTo == default(DateTimeOffset))
+        {
+            rental.RentalDateTo = new DateTimeOffset(
+                DateTime.SpecifyKind(
+                    DateTime.Today.AddDays(2),
+                    DateTimeKind.Utc));
+        }
+
+        _from = rental.RentalDateFrom.DateTime;
+        _to = rental.RentalDateTo.DateTime;
 
         await SearchDevices();
     }
@@ -245,7 +283,8 @@
 
         try
         {
-            Devices = await apiservice.GetDeviceForRentalAsync(deviceBrand, deviceModel);
+            //Devices = await apiservice.GetDeviceForRentalAsync(deviceBrand, deviceModel);
+            Devices = await apiservice.GetDevicesAsync(deviceModel, (double?)maxRentalPrice);
         }
         catch (ApiException ex)
         {
@@ -258,6 +297,6 @@
 
     private void RentDevices()
     {
-        navigation.NavigateTo("/rentals/createdevice");
+        navigation.NavigateTo("/rentals/createrental");
     }
 }

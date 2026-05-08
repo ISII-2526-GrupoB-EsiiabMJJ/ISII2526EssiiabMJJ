@@ -44,9 +44,9 @@
         </div>
         <div class="col-md">
             <div class="form-floating">
-                @*this button will be disabled if there are no movies in the shopping cart*@
+                @*this button will be disabled if there are no devices in the shopping cart*@
                 <button class="btn btn-primary" type="submit" id="Submit">
-                    Alquila tus dispositivos
+                    Guardar alquiler
                 </button>
             </div>
         </div>
@@ -56,9 +56,10 @@
 <h4>Detalles del alquiler</h4>
 <p><b>Date from:</b> @rental.RentalDateFrom.ToString("dd/MM/yyyy") <b>to:</b> @rental.RentalDateTo.ToString("dd/MM/yyyy")</p>
 <p>
-    <b>Total price:</b> @rental.TotalPrice €
-    <button class="btn btn-outline-primary" type="submit" @onclick="ModifyRentalItems" id="ModifyMovies">
-        Modify movies
+    <b>Total price:</b> @rentalState.TotalPrice €
+    <button class="btn btn-outline-primary" type="button"
+            @onclick="ModifyRentalItems" id="ModifyDevices">
+        Modificar dispositivos 
     </button>
 </p>
 <div class="mh-100 table-responsive">
@@ -74,7 +75,8 @@
         <tbody>
             @foreach (RentalItemDTO item in rental.RentalItems)
             {
-                <tr id="RentalItem_@item.DeviceID">
+                <tr id="RentalItem_@item.Model">
+                    <td>@item.DeviceID</td>
                     <td>@item.Model</td>
                     <td>@item.PriceForRent €</td>
                     <td>@item.Description</td>
@@ -109,7 +111,7 @@
     private RentalForCreateDTO rental => rentalState.Rental;
 
     private bool DialogIsOpen;
-    private bool OkCancel = false; //ok=true cancel=false
+    private bool OkCancel = false; 
     private void OpenDialog()
     {
         DialogIsOpen = true;
@@ -117,7 +119,10 @@
 
     private void ModifyRentalItems()
     {
-        Navigation.NavigateTo("/rentals/listdevicesforrenting");
+        
+        Navigation.NavigateTo("/rent/listdevicesforrenting");
+      
+       
     }
 
     private async Task OnDialogClose(bool isOk)
@@ -152,7 +157,7 @@
                         };
                     var rented = await apiservice.CreateRentalAsync(rentalDTO);
                     rentalState.RentalProcessed();
-                    Navigation.NavigateTo($"/rentals/detailrental/?RentalID={rented.Id}");
+                    Navigation.NavigateTo($"/rentals/detailrental?RentalId={rented.Id}");
                 }
                 catch (AppForSEII2526.Web.API.ApiException<AppForSEII2526.Web.API.ValidationProblemDetails> apiexceptionvalidation)
                 {
