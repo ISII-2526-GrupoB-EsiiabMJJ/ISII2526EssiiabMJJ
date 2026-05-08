@@ -1,0 +1,189 @@
+﻿@page "/purchase/selectdevicesforpurchase"
+@implements IDisposable
+@using AppForSEII2526.Web.API
+@inject AppForSEII2526APIClient ApiClient
+@inject PurchaseStateContainer PurchaseState
+@inject NavigationManager Navigation
+
+<h3>Comprar dispositivo</h3>
+
+<div class="mb-3">
+    <label for="searchDevices" class="form-label">Nombre del dispositivo</label>
+    <input id="searchDevices"
+           class="form-control"
+           @bind="DeviceNameFilter"
+           placeholder="Buscar por nombre" />
+</div>
+
+<div class="mb-3">
+    <label for="selectColor" class="form-label">Color</label>
+    <input id="selectColor"
+           class="form-control"
+           @bind="ColorFilter"
+           placeholder="Buscar por color" />
+</div>
+
+<button class="btn btn-primary mb-3" @onclick="SearchDevices">
+    Buscar
+</button>
+
+@if (IsLoading)
+{
+    <p>Cargando dispositivos...</p>
+}
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div class="alert alert-danger">
+        @ErrorMessage
+    </div>
+}
+else if (Devices is null || !Devices.Any())
+{
+    <p id="noDevicesMessage">No hay dispositivos disponibles para compra.</p>
+}
+else
+{
+    <table id="TableOfDevices" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Color</th>
+                <th>Precio</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in Devices)
+            {
+                <tr id="@($"DeviceData_{device.Name}")">
+                    <td>@device.Name</td>
+                    <td>@device.Brand</td>
+                    <td>@device.Model</td>
+                    <td>@device.Color</td>
+                    <td>@device.Price.ToString("0.00") €</td>
+                    <td>
+                        <button id="@($"deviceToBuy_{device.Name}")"
+                                class="btn btn-success"
+                                @onclick="() => AddDeviceToCart(device)">
+                            Añadir
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h4>Carrito de compra</h4>
+
+@if (!PurchaseState.HasItems)
+{
+    <p>El carrito está vacío.</p>
+}
+else
+{
+    <div id="showPurchaseCart">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Color</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in PurchaseState.PurchaseItems)
+                {
+                    <tr>
+                        <td>@item.Brand</td>
+                        <td>@item.Model</td>
+                        <td>@item.Color</td>
+                        <td>@item.Price.ToString("0.00") €</td>
+                        <td>@item.Quantity</td>
+                        <td>
+                            <button id="@($"removeDevice_{item.DeviceId}")"
+                                    class="btn btn-danger"
+                                    @onclick="() => RemoveDeviceFromCart(item.DeviceId)">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <p id="totalAmount">
+            Total: @PurchaseState.TotalPrice.ToString("0.00") €
+        </p>
+    </div>
+}
+
+<button id="purchaseDevicesButton"
+        class="btn btn-primary"
+        disabled="@(!PurchaseState.HasItems)"
+        @onclick="ContinuePurchase">
+    Comprar dispositivos
+</button>
+
+@code {
+    private string? DeviceNameFilter;
+    private string? ColorFilter;
+    private ICollection<DeviceForPurchaseDTO>? Devices;
+    private bool IsLoading;
+    private string? ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        PurchaseState.OnChange += StateHasChanged;
+        await SearchDevices();
+    }
+
+    private async Task SearchDevices()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+
+        try
+        {
+            Devices = await ApiClient.GetDevicesForPurchaseAsync(DeviceNameFilter, ColorFilter);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"No se han podido cargar los dispositivos: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void AddDeviceToCart(DeviceForPurchaseDTO device)
+    {
+        PurchaseState.AddDevice(device);
+    }
+
+    private void RemoveDeviceFromCart(int deviceId)
+    {
+        PurchaseState.RemoveDevice(deviceId);
+    }
+
+    private void ContinuePurchase()
+    {
+        if (PurchaseState.HasItems)
+        {
+            Navigation.NavigateTo("/purchase/createpurchase");
+        }
+    }
+
+    public void Dispose()
+    {
+        PurchaseState.OnChange -= StateHasChanged;
+    }
+}
