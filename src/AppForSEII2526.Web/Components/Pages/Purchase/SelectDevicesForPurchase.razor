@@ -75,7 +75,7 @@ else
                         <button id="@($"deviceToBuy_{device.Name}")"
                                 class="btn btn-success"
                                 @onclick="() => AddDeviceToCart(device)">
-                            Añadir
+                            @(PurchaseState.ContainsDevice(device.Id) ? "Añadir otro" : "Añadir")
                         </button>
                     </td>
                 </tr>
@@ -91,7 +91,7 @@ else
 @if (!PurchaseState.HasItems)
 {
     <p id="emptyCartMessage" class="text-muted">
-        El carrito está vacío.
+        Añade al menos un dispositivo al carrito para continuar con la compra.
     </p>
 }
 else
@@ -162,6 +162,7 @@ else
 <button id="purchaseDevicesButton"
         class="btn btn-primary"
         disabled="@(!PurchaseState.HasItems)"
+        title="@GetPurchaseButtonTitle()"
         @onclick="ContinuePurchase">
     Comprar dispositivos
 </button>
@@ -218,10 +219,19 @@ else
 
     private void ContinuePurchase()
     {
-        if (PurchaseState.HasItems)
+        if (!PurchaseState.HasItems)
         {
-            Navigation.NavigateTo("/purchase/createpurchase");
+            return;
         }
+
+        Navigation.NavigateTo("/purchase/createpurchase");
+    }
+
+    private string GetPurchaseButtonTitle()
+    {
+        return PurchaseState.HasItems
+            ? "Continuar con la compra"
+            : "Añade al menos un dispositivo al carrito para continuar";
     }
 
     public void Dispose()
