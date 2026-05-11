@@ -1,0 +1,160 @@
+﻿@page "/purchase/createpurchase"
+@using AppForSEII2526.Web.API
+@inject AppForSEII2526APIClient ApiClient
+@inject PurchaseStateContainer PurchaseState
+@inject NavigationManager Navigation
+
+<h3>Formalizar compra</h3>
+
+@if (!PurchaseState.HasItems)
+{
+    <div class="alert alert-warning">
+        No hay dispositivos en el carrito. Vuelve a la selección para añadir dispositivos.
+    </div>
+
+    <button id="backToSelectDevices"
+            class="btn btn-secondary"
+            @onclick="GoBackToCart">
+        Volver al carrito
+    </button>
+}
+else
+{
+    <EditForm Model="PurchaseState" OnValidSubmit="CreatePurchaseAsync">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <h4>Dispositivos seleccionados</h4>
+
+        @foreach (var item in PurchaseState.PurchaseItems)
+        {
+            <PurchaseItem Item="item"
+                          QuantityChanged="quantity => OnQuantityChanged(item.DeviceId, quantity)"
+                          DescriptionChanged="description => OnDescriptionChanged(item.DeviceId, description)"
+                          Removed="RemoveItem" />
+        }
+
+        <h4>Datos de entrega</h4>
+
+        <div class="mb-3">
+            <label for="purchaseName" class="form-label">Nombre</label>
+            <input id="purchaseName"
+                   class="form-control"
+                   @bind="PurchaseState.Name" />
+        </div>
+
+        <div class="mb-3">
+            <label for="purchaseSurname" class="form-label">Apellidos</label>
+            <input id="purchaseSurname"
+                   class="form-control"
+                   @bind="PurchaseState.Surname" />
+        </div>
+
+        <div class="mb-3">
+            <label for="purchaseDeliveryAddress" class="form-label">Dirección de entrega</label>
+            <textarea id="purchaseDeliveryAddress"
+                      class="form-control"
+                      rows="3"
+                      @bind="PurchaseState.DeliveryAddress">
+                </textarea>
+        </div>
+
+        <div class="mb-3">
+            <label for="paymentMethodSelected" class="form-label">Método de pago</label>
+            <select id="paymentMethodSelected"
+                    class="form-select"
+                    @bind="PurchaseState.PaymentMethod">
+                <option value="@PaymentMethod.CreditCard">Tarjeta de crédito</option>
+                <option value="@PaymentMethod.PayPal">PayPal</option>
+            </select>
+        </div>
+
+        <p id="createPurchaseTotalQuantity">
+            Cantidad total: @PurchaseState.TotalQuantity
+        </p>
+
+        <p id="createPurchaseTotalPrice">
+            Total: @PurchaseState.TotalPrice.ToString("0.00") €
+        </p>
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div id="createPurchaseError" class="alert alert-danger">
+                @ErrorMessage
+            </div>
+        }
+
+        <button id="modifyPurchaseCart"
+                type="button"
+                class="btn btn-secondary"
+                @onclick="GoBackToCart">
+            Modificar carrito
+        </button>
+
+        <button id="savePurchase"
+                type="submit"
+                class="btn btn-primary ms-2"
+                disabled="@IsSaving">
+            Guardar compra
+        </button>
+    </EditForm>
+}
+
+@code {
+    private bool IsSaving;
+    private string? ErrorMessage;
+
+    private void GoBackToCart()
+    {
+        Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
+    }
+
+    private void OnQuantityChanged(int deviceId, int quantity)
+    {
+        PurchaseState.UpdateQuantity(deviceId, quantity);
+    }
+
+    private void OnDescriptionChanged(int deviceId, string? description)
+    {
+        PurchaseState.UpdateDescription(deviceId, description);
+    }
+
+    private void RemoveItem(int deviceId)
+    {
+        PurchaseState.RemoveDevice(deviceId);
+
+        if (!PurchaseState.HasItems)
+        {
+            Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
+        }
+    }
+
+    private async Task CreatePurchaseAsync()
+    {
+        ErrorMessage = null;
+        IsSaving = true;
+
+        try
+        {
+            var purchaseForCreate = PurchaseState.ToPurchaseForCreateDTO();
+
+            var createdPurchase = await ApiClient.CreatePurchaseAsync(purchaseForCreate);
+
+            PurchaseState.Clear();
+
+            Navigation.NavigateTo($"/purchase/detailpurchase/{createdPurchase.Id}");
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.Response;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"No se ha podido crear la compra: {ex.Message}";
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+}
