@@ -4,6 +4,7 @@
 @inject PurchaseStateContainer PurchaseState
 @inject NavigationManager Navigation
 
+
 <h3>Formalizar compra</h3>
 
 @if (!PurchaseState.HasItems)
@@ -20,7 +21,7 @@
 }
 else
 {
-    <EditForm Model="PurchaseState" OnValidSubmit="CreatePurchaseAsync">
+    <EditForm Model="PurchaseState" OnSubmit="CreatePurchaseAsync">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -42,6 +43,12 @@ else
                    class="form-control"
                    @bind="PurchaseState.Name" />
         </div>
+        @if (ValidationErrors.ContainsKey(nameof(PurchaseState.Name)))
+        {
+            <div id="purchaseNameError" class="text-danger">
+                @ValidationErrors[nameof(PurchaseState.Name)]
+            </div>
+        }
 
         <div class="mb-3">
             <label for="purchaseSurname" class="form-label">Apellidos</label>
@@ -49,6 +56,12 @@ else
                    class="form-control"
                    @bind="PurchaseState.Surname" />
         </div>
+        @if (ValidationErrors.ContainsKey(nameof(PurchaseState.Surname)))
+        {
+            <div id="purchaseSurnameError" class="text-danger">
+                @ValidationErrors[nameof(PurchaseState.Surname)]
+            </div>
+        }
 
         <div class="mb-3">
             <label for="purchaseDeliveryAddress" class="form-label">Dirección de entrega</label>
@@ -58,6 +71,12 @@ else
                       @bind="PurchaseState.DeliveryAddress">
                 </textarea>
         </div>
+        @if (ValidationErrors.ContainsKey(nameof(PurchaseState.DeliveryAddress)))
+        {
+            <div id="purchaseDeliveryAddressError" class="text-danger">
+                @ValidationErrors[nameof(PurchaseState.DeliveryAddress)]
+            </div>
+        }
 
         <div class="mb-3">
             <label for="paymentMethodSelected" class="form-label">Método de pago</label>
@@ -83,6 +102,12 @@ else
                 @ErrorMessage
             </div>
         }
+        @if (ValidationErrors.ContainsKey("PurchaseItems"))
+        {
+            <div id="purchaseItemsError" class="text-danger mb-3">
+                @ValidationErrors["PurchaseItems"]
+            </div>
+        }
 
         <button id="modifyPurchaseCart"
                 type="button"
@@ -103,6 +128,7 @@ else
 @code {
     private bool IsSaving;
     private string? ErrorMessage;
+    private Dictionary<string, string> ValidationErrors = new();
 
     private void GoBackToCart()
     {
@@ -132,6 +158,13 @@ else
     private async Task CreatePurchaseAsync()
     {
         ErrorMessage = null;
+        ValidationErrors.Clear();
+
+        if (!ValidatePurchaseForm())
+        {
+            return;
+        }
+
         IsSaving = true;
 
         try
@@ -157,4 +190,39 @@ else
             IsSaving = false;
         }
     }
+
+    private bool ValidatePurchaseForm()
+    {
+        if (!PurchaseState.HasItems)
+        {
+            ValidationErrors["PurchaseItems"] = "Debe añadirse al menos un dispositivo al carrito.";
+        }
+
+        if (string.IsNullOrWhiteSpace(PurchaseState.Name))
+        {
+            ValidationErrors[nameof(PurchaseState.Name)] = "El nombre es obligatorio.";
+        }
+
+        if (string.IsNullOrWhiteSpace(PurchaseState.Surname))
+        {
+            ValidationErrors[nameof(PurchaseState.Surname)] = "Los apellidos son obligatorios.";
+        }
+
+        if (string.IsNullOrWhiteSpace(PurchaseState.DeliveryAddress))
+        {
+            ValidationErrors[nameof(PurchaseState.DeliveryAddress)] = "La dirección de entrega es obligatoria.";
+        }
+
+        foreach (var item in PurchaseState.PurchaseItems)
+        {
+            if (item.Quantity < 1)
+            {
+                ValidationErrors["PurchaseItems"] = "La cantidad de cada dispositivo debe ser mayor o igual que 1.";
+                break;
+            }
+        }
+
+        return !ValidationErrors.Any();
+    }
+
 }
