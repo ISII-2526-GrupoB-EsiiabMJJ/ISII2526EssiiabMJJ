@@ -90,31 +90,54 @@ else
 
 @if (!PurchaseState.HasItems)
 {
-    <p>El carrito está vacío.</p>
+    <p id="emptyCartMessage" class="text-muted">
+        El carrito está vacío.
+    </p>
 }
 else
 {
     <div id="showPurchaseCart">
-        <table class="table">
+        <table id="PurchaseCartTable" class="table">
             <thead>
                 <tr>
                     <th>Marca</th>
                     <th>Modelo</th>
                     <th>Color</th>
-                    <th>Precio</th>
+                    <th>Precio unitario</th>
                     <th>Cantidad</th>
+                    <th>Subtotal</th>
                     <th>Eliminar</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in PurchaseState.PurchaseItems)
                 {
-                    <tr>
+                    <tr id="@($"PurchaseCartItem_{item.DeviceId}")">
                         <td>@item.Brand</td>
                         <td>@item.Model</td>
                         <td>@item.Color</td>
                         <td>@item.Price.ToString("0.00") €</td>
-                        <td>@item.Quantity</td>
+                        <td>
+                            <button id="@($"decreaseQuantity_{item.DeviceId}")"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    disabled="@(item.Quantity <= 1)"
+                                    @onclick="() => DecreaseQuantity(item.DeviceId)">
+                                -
+                            </button>
+
+                            <span id="@($"PurchaseItemQuantity_{item.DeviceId}")" class="mx-2">
+                                @item.Quantity
+                            </span>
+
+                            <button id="@($"increaseQuantity_{item.DeviceId}")"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    @onclick="() => IncreaseQuantity(item.DeviceId)">
+                                +
+                            </button>
+                        </td>
+                        <td id="@($"PurchaseItemSubtotal_{item.DeviceId}")">
+                            @((item.Price * item.Quantity).ToString("0.00")) €
+                        </td>
                         <td>
                             <button id="@($"removeDevice_{item.DeviceId}")"
                                     class="btn btn-danger"
@@ -127,12 +150,15 @@ else
             </tbody>
         </table>
 
-        <p id="totalAmount">
+        <p id="cartTotalQuantity">
+            Cantidad total: @PurchaseState.TotalQuantity
+        </p>
+
+        <p id="cartTotalPrice">
             Total: @PurchaseState.TotalPrice.ToString("0.00") €
         </p>
     </div>
 }
-
 <button id="purchaseDevicesButton"
         class="btn btn-primary"
         disabled="@(!PurchaseState.HasItems)"
@@ -208,5 +234,25 @@ else
         DeviceNameFilter = null;
         ColorFilter = null;
         await SearchDevices();
+    }
+
+    private void IncreaseQuantity(int deviceId)
+    {
+        var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
+
+        if (item is not null)
+        {
+            PurchaseState.UpdateQuantity(deviceId, item.Quantity + 1);
+        }
+    }
+
+    private void DecreaseQuantity(int deviceId)
+    {
+        var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
+
+        if (item is not null && item.Quantity > 1)
+        {
+            PurchaseState.UpdateQuantity(deviceId, item.Quantity - 1);
+        }
     }
 }
