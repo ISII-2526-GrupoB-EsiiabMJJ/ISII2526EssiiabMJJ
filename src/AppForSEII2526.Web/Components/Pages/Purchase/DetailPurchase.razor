@@ -1,0 +1,144 @@
+﻿@page "/purchase/detailpurchase/{PurchaseId:int}"
+@using AppForSEII2526.Web.API
+@inject AppForSEII2526APIClient ApiClient
+@inject NavigationManager Navigation
+
+<h3>Comprobante de compra</h3>
+
+@if (IsLoading)
+{
+    <p>Cargando detalle de la compra...</p>
+}
+else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+    <div id="purchaseDetailError" class="alert alert-danger">
+        @ErrorMessage
+    </div>
+
+    <button id="backToPurchaseSelection"
+            class="btn btn-secondary"
+            @onclick="GoToPurchaseSelection">
+        Volver a comprar dispositivos
+    </button>
+}
+else if (PurchaseDetail is not null)
+{
+    <div id="purchaseDetail">
+        <h4>Datos del cliente</h4>
+
+        <p id="purchaseCustomerName">
+            <strong>Nombre:</strong> @PurchaseDetail.Name
+        </p>
+
+        <p id="purchaseCustomerSurname">
+            <strong>Apellidos:</strong> @PurchaseDetail.Surname
+        </p>
+
+        <p id="purchaseDeliveryAddress">
+            <strong>Dirección de entrega:</strong> @PurchaseDetail.DeliveryAddress
+        </p>
+
+        <p id="purchaseDate">
+            <strong>Fecha de compra:</strong> @PurchaseDetail.PurchaseDateUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+        </p>
+
+        <h4>Resumen de la compra</h4>
+
+        <p id="purchaseTotalQuantity">
+            <strong>Cantidad total:</strong> @PurchaseDetail.TotalQuantity
+        </p>
+
+        <p id="purchaseTotalPrice">
+            <strong>Precio total:</strong> @PurchaseDetail.TotalPrice.ToString("0.00") €
+        </p>
+
+        <h4>Dispositivos comprados</h4>
+
+        @if (PurchaseDetail.PurchaseItems is null || !PurchaseDetail.PurchaseItems.Any())
+        {
+            <p id="noPurchaseItemsMessage">
+                No hay dispositivos asociados a esta compra.
+            </p>
+        }
+        else
+        {
+            <table id="PurchaseDetailItemsTable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Color</th>
+                        <th>Precio unitario</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in PurchaseDetail.PurchaseItems)
+                    {
+                        <tr id="@($"PurchaseDetailItem_{item.DeviceId}")">
+                            <td>@item.Brand</td>
+                            <td>@item.Model</td>
+                            <td>@item.Color</td>
+                            <td>@item.Price.ToString("0.00") €</td>
+                            <td>@item.Quantity</td>
+                            <td>@((item.Price * item.Quantity).ToString("0.00")) €</td>
+                            <td>@item.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        <button id="newPurchaseButton"
+                class="btn btn-primary"
+                @onclick="GoToPurchaseSelection">
+            Realizar otra compra
+        </button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int PurchaseId { get; set; }
+
+    private PurchaseDetailDTO? PurchaseDetail;
+    private bool IsLoading;
+    private string? ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPurchaseDetailAsync();
+    }
+
+    private async Task LoadPurchaseDetailAsync()
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+
+        try
+        {
+            PurchaseDetail = await ApiClient.GetPurchaseAsync(PurchaseId);
+        }
+        catch (ApiException ex)
+        {
+            ErrorMessage = ex.StatusCode == 404
+                ? "No se ha encontrado la compra solicitada."
+                : ex.Response;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"No se ha podido cargar el detalle de la compra: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void GoToPurchaseSelection()
+    {
+        Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
+    }
+}

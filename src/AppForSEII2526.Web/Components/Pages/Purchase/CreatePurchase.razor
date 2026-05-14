@@ -129,6 +129,7 @@ else
     private bool IsSaving;
     private string? ErrorMessage;
     private Dictionary<string, string> ValidationErrors = new();
+    private const string DefaultCustomerUserName = "maria@uclm.es";
 
     private void GoBackToCart()
     {
@@ -169,6 +170,8 @@ else
 
         try
         {
+            PurchaseState.CustomerUserName ??= DefaultCustomerUserName;
+
             var purchaseForCreate = PurchaseState.ToPurchaseForCreateDTO();
 
             var createdPurchase = await ApiClient.CreatePurchaseAsync(purchaseForCreate);
