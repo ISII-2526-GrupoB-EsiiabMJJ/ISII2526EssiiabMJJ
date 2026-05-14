@@ -21,8 +21,8 @@ namespace AppForSEII2526.API.Controllers
         }
 
         // GET: api/Receipts/GetRepairsForReceipt
-        // Devuelve las reparaciones disponibles para crear un recibo.
-        // Permite filtrar por nombre de reparación y por escala.
+        // Devuelve las reparaciones disponibles para contratar una reparación.
+        // Permite filtrar por nombre de reparación y/o escala.
         [HttpGet]
         [Route("[action]")]
         [ProducesResponseType(typeof(IList<RepairForReceiptDTO>), (int)HttpStatusCode.OK)]
@@ -31,10 +31,14 @@ namespace AppForSEII2526.API.Controllers
             string? scale)
         {
             if (!string.IsNullOrWhiteSpace(name))
+            {
                 name = name.Trim().ToLower();
+            }
 
             if (!string.IsNullOrWhiteSpace(scale))
+            {
                 scale = scale.Trim().ToLower();
+            }
 
             var query = _context.Repairs
                 .Include(r => r.Scale)
@@ -63,10 +67,10 @@ namespace AppForSEII2526.API.Controllers
             return Ok(repairs);
         }
 
-        // GET: api/Receipts/GetReceipt/5
+        // GET: api/Receipts/GetReceipt?id=5
         // Devuelve el detalle completo de un recibo de reparación.
         [HttpGet]
-        [Route("[action]/{id:int}")]
+        [Route("[action]")]
         [ProducesResponseType(typeof(ReceiptDetailDTO), (int)HttpStatusCode.OK)]
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult<ReceiptDetailDTO>> GetReceipt(int id)
@@ -89,7 +93,7 @@ namespace AppForSEII2526.API.Controllers
         }
 
         // POST: api/Receipts/CreateReceipt
-        // Crea un recibo de reparación a partir de las reparaciones seleccionadas.
+        // Crea un recibo de reparación con las reparaciones seleccionadas por el cliente.
         [HttpPost]
         [Route("[action]")]
         [ProducesResponseType(typeof(ReceiptDetailDTO), (int)HttpStatusCode.Created)]
@@ -119,6 +123,11 @@ namespace AppForSEII2526.API.Controllers
                 ModelState.AddModelError("DeliveryAddress", "The delivery address is required");
             }
 
+            if (!Enum.IsDefined(typeof(PaymentMethodTypes), receiptForCreate.PaymentMethod))
+            {
+                ModelState.AddModelError("PaymentMethod", "The payment method is not valid");
+            }
+
             if (receiptForCreate.ReceiptItems == null || receiptForCreate.ReceiptItems.Count == 0)
             {
                 ModelState.AddModelError("ReceiptItems", "You must include at least one repair");
@@ -144,6 +153,8 @@ namespace AppForSEII2526.API.Controllers
                 return BadRequest(new ValidationProblemDetails(ModelState));
             }
 
+            var receiptItems = receiptForCreate.ReceiptItems!;
+
             var user = await _context.Users
                 .FirstOrDefaultAsync(au => au.UserName == receiptForCreate.CustomerUserName);
 
@@ -153,7 +164,7 @@ namespace AppForSEII2526.API.Controllers
                 return BadRequest(new ValidationProblemDetails(ModelState));
             }
 
-            var repairIds = receiptForCreate.ReceiptItems
+            var repairIds = receiptItems
                 .Select(ri => ri.RepairId)
                 .Distinct()
                 .ToList();
@@ -163,7 +174,7 @@ namespace AppForSEII2526.API.Controllers
                 .Where(r => repairIds.Contains(r.Id))
                 .ToListAsync();
 
-            foreach (var item in receiptForCreate.ReceiptItems)
+            foreach (var item in receiptItems)
             {
                 if (!repairs.Any(r => r.Id == item.RepairId))
                 {
@@ -178,7 +189,7 @@ namespace AppForSEII2526.API.Controllers
                 return BadRequest(new ValidationProblemDetails(ModelState));
             }
 
-            decimal totalPrice = receiptForCreate.ReceiptItems
+            decimal totalPrice = receiptItems
                 .Sum(item => repairs.First(r => r.Id == item.RepairId).Cost);
 
             var receipt = new Receipt(
@@ -189,7 +200,7 @@ namespace AppForSEII2526.API.Controllers
                 totalPrice,
                 user);
 
-            foreach (var item in receiptForCreate.ReceiptItems)
+            foreach (var item in receiptItems)
             {
                 var repair = repairs.First(r => r.Id == item.RepairId);
 
