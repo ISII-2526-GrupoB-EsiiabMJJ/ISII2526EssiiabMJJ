@@ -7,10 +7,9 @@ namespace AppForSEII2526.API.Models
     {
         public ReceiptItem() { }
 
-        public ReceiptItem(string model, int receiptId, int repairId)
+        public ReceiptItem(string model, int repairId)
         {
             Model = model;
-            ReceiptId = receiptId;
             RepairId = repairId;
         }
 
