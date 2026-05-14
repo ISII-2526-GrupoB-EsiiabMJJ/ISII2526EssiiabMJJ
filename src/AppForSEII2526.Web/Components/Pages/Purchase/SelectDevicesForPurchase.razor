@@ -1,6 +1,8 @@
 ﻿@page "/purchase/selectdevicesforpurchase"
+@attribute [Authorize]
 @implements IDisposable
 @using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
 @inject AppForSEII2526APIClient ApiClient
 @inject PurchaseStateContainer PurchaseState
 @inject NavigationManager Navigation

@@ -1,5 +1,7 @@
 ﻿@page "/purchase/detailpurchase/{PurchaseId:int}"
+@attribute [Authorize]
 @using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
 @inject AppForSEII2526APIClient ApiClient
 @inject NavigationManager Navigation
 

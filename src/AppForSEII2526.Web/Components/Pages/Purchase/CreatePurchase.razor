@@ -1,9 +1,12 @@
 ﻿@page "/purchase/createpurchase"
+@attribute [Authorize]
 @using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AppForSEII2526APIClient ApiClient
 @inject PurchaseStateContainer PurchaseState
 @inject NavigationManager Navigation
-
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h3>Formalizar compra</h3>
 
@@ -129,7 +132,6 @@ else
     private bool IsSaving;
     private string? ErrorMessage;
     private Dictionary<string, string> ValidationErrors = new();
-    private const string DefaultCustomerUserName = "maria@uclm.es";
 
     private void GoBackToCart()
     {
@@ -170,7 +172,16 @@ else
 
         try
         {
-            PurchaseState.CustomerUserName ??= DefaultCustomerUserName;
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userName = authenticationState.User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                ErrorMessage = "No se ha podido identificar al usuario autenticado.";
+                return;
+            }
+
+            PurchaseState.CustomerUserName = userName;
 
             var purchaseForCreate = PurchaseState.ToPurchaseForCreateDTO();
 
