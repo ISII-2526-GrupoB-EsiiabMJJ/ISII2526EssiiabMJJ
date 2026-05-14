@@ -109,4 +109,17 @@ public class SelectDevicesForPurchasePageObject : PageObject
         WaitForBeingVisible(_cartTotalPrice);
         return _driver.FindElement(_cartTotalPrice).Text;
     }
+    public void RemoveFirstDeviceFromCart()
+    {
+        var removeButton = By.CssSelector("button[id^='removeDevice_']");
+        WaitForBeingClickable(removeButton);
+        _driver.FindElement(removeButton).Click();
+    }
+
+    public void IncreaseFirstDeviceQuantity()
+    {
+        var increaseButton = By.CssSelector("button[id^='increaseQuantity_']");
+        WaitForBeingClickable(increaseButton);
+        _driver.FindElement(increaseButton).Click();
+    }
 }
