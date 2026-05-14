@@ -1,0 +1,80 @@
+﻿@using AppForSEII2526.Web.API
+
+<div id="@($"PurchaseItem_{Item.DeviceId}")" class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@Item.Brand @Item.Model</h5>
+
+        <p class="card-text">
+            <strong>Color:</strong> @Item.Color<br />
+            <strong>Precio unitario:</strong> @Item.Price.ToString("0.00") €
+        </p>
+
+        <div class="mb-3">
+            <label for="@($"purchaseQuantity_{Item.DeviceId}")" class="form-label">
+                Cantidad
+            </label>
+            <input id="@($"purchaseQuantity_{Item.DeviceId}")"
+                   type="number"
+                   min="1"
+                   class="form-control"
+                   value="@Item.Quantity"
+                   @onchange="OnQuantityChanged" />
+        </div>
+
+        <div class="mb-3">
+            <label for="@($"purchaseDescription_{Item.DeviceId}")" class="form-label">
+                Descripción opcional
+            </label>
+            <textarea id="@($"purchaseDescription_{Item.DeviceId}")"
+                      class="form-control"
+                      rows="3"
+                      @bind="Item.Description"
+                      @bind:after="NotifyDescriptionChanged">
+            </textarea>
+        </div>
+
+        <p id="@($"purchaseItemSubtotal_{Item.DeviceId}")">
+            <strong>Subtotal:</strong> @((Item.Price * Item.Quantity).ToString("0.00")) €
+        </p>
+
+        <button id="@($"removePurchaseItem_{Item.DeviceId}")"
+                class="btn btn-danger"
+                @onclick="Remove">
+            Eliminar
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public PurchaseItemDTO Item { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<int> QuantityChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string?> DescriptionChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<int> Removed { get; set; }
+
+    private async Task OnQuantityChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var quantity))
+        {
+            quantity = Math.Max(1, quantity);
+            Item.Quantity = quantity;
+            await QuantityChanged.InvokeAsync(quantity);
+        }
+    }
+
+    private async Task NotifyDescriptionChanged()
+    {
+        await DescriptionChanged.InvokeAsync(Item.Description);
+    }
+
+    private async Task Remove()
+    {
+        await Removed.InvokeAsync(Item.DeviceId);
+    }
+}
