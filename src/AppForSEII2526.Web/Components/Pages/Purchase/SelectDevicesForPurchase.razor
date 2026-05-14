@@ -23,8 +23,16 @@
            placeholder="Buscar por color" />
 </div>
 
-<button class="btn btn-primary mb-3" @onclick="SearchDevices">
+<button id="searchDevicesButton"
+        class="btn btn-primary mb-3"
+        @onclick="SearchDevices">
     Buscar
+</button>
+
+<button id="clearDeviceFiltersButton"
+        class="btn btn-secondary mb-3 ms-2"
+        @onclick="ClearFilters">
+    Limpiar filtros
 </button>
 
 @if (IsLoading)
@@ -67,7 +75,7 @@ else
                         <button id="@($"deviceToBuy_{device.Name}")"
                                 class="btn btn-success"
                                 @onclick="() => AddDeviceToCart(device)">
-                            Añadir
+                            @(PurchaseState.ContainsDevice(device.Id) ? "Añadir otro" : "Añadir")
                         </button>
                     </td>
                 </tr>
@@ -82,31 +90,54 @@ else
 
 @if (!PurchaseState.HasItems)
 {
-    <p>El carrito está vacío.</p>
+    <p id="emptyCartMessage" class="text-muted">
+        Añade al menos un dispositivo al carrito para continuar con la compra.
+    </p>
 }
 else
 {
     <div id="showPurchaseCart">
-        <table class="table">
+        <table id="PurchaseCartTable" class="table">
             <thead>
                 <tr>
                     <th>Marca</th>
                     <th>Modelo</th>
                     <th>Color</th>
-                    <th>Precio</th>
+                    <th>Precio unitario</th>
                     <th>Cantidad</th>
+                    <th>Subtotal</th>
                     <th>Eliminar</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in PurchaseState.PurchaseItems)
                 {
-                    <tr>
+                    <tr id="@($"PurchaseCartItem_{item.DeviceId}")">
                         <td>@item.Brand</td>
                         <td>@item.Model</td>
                         <td>@item.Color</td>
                         <td>@item.Price.ToString("0.00") €</td>
-                        <td>@item.Quantity</td>
+                        <td>
+                            <button id="@($"decreaseQuantity_{item.DeviceId}")"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    disabled="@(item.Quantity <= 1)"
+                                    @onclick="() => DecreaseQuantity(item.DeviceId)">
+                                -
+                            </button>
+
+                            <span id="@($"PurchaseItemQuantity_{item.DeviceId}")" class="mx-2">
+                                @item.Quantity
+                            </span>
+
+                            <button id="@($"increaseQuantity_{item.DeviceId}")"
+                                    class="btn btn-outline-secondary btn-sm"
+                                    @onclick="() => IncreaseQuantity(item.DeviceId)">
+                                +
+                            </button>
+                        </td>
+                        <td id="@($"PurchaseItemSubtotal_{item.DeviceId}")">
+                            @((item.Price * item.Quantity).ToString("0.00")) €
+                        </td>
                         <td>
                             <button id="@($"removeDevice_{item.DeviceId}")"
                                     class="btn btn-danger"
@@ -119,15 +150,19 @@ else
             </tbody>
         </table>
 
-        <p id="totalAmount">
+        <p id="cartTotalQuantity">
+            Cantidad total: @PurchaseState.TotalQuantity
+        </p>
+
+        <p id="cartTotalPrice">
             Total: @PurchaseState.TotalPrice.ToString("0.00") €
         </p>
     </div>
 }
-
 <button id="purchaseDevicesButton"
         class="btn btn-primary"
         disabled="@(!PurchaseState.HasItems)"
+        title="@GetPurchaseButtonTitle()"
         @onclick="ContinuePurchase">
     Comprar dispositivos
 </button>
@@ -152,7 +187,15 @@ else
 
         try
         {
-            Devices = await ApiClient.GetDevicesForPurchaseAsync(DeviceNameFilter, ColorFilter);
+            var name = string.IsNullOrWhiteSpace(DeviceNameFilter)
+                ? null
+                : DeviceNameFilter.Trim();
+
+            var color = string.IsNullOrWhiteSpace(ColorFilter)
+                ? null
+                : ColorFilter.Trim();
+
+            Devices = await ApiClient.GetDevicesForPurchaseAsync(name, color);
         }
         catch (Exception ex)
         {
@@ -176,14 +219,50 @@ else
 
     private void ContinuePurchase()
     {
-        if (PurchaseState.HasItems)
+        if (!PurchaseState.HasItems)
         {
-            Navigation.NavigateTo("/purchase/createpurchase");
+            return;
         }
+
+        Navigation.NavigateTo("/purchase/createpurchase");
+    }
+
+    private string GetPurchaseButtonTitle()
+    {
+        return PurchaseState.HasItems
+            ? "Continuar con la compra"
+            : "Añade al menos un dispositivo al carrito para continuar";
     }
 
     public void Dispose()
     {
         PurchaseState.OnChange -= StateHasChanged;
+    }
+
+    private async Task ClearFilters()
+    {
+        DeviceNameFilter = null;
+        ColorFilter = null;
+        await SearchDevices();
+    }
+
+    private void IncreaseQuantity(int deviceId)
+    {
+        var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
+
+        if (item is not null)
+        {
+            PurchaseState.UpdateQuantity(deviceId, item.Quantity + 1);
+        }
+    }
+
+    private void DecreaseQuantity(int deviceId)
+    {
+        var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
+
+        if (item is not null && item.Quantity > 1)
+        {
+            PurchaseState.UpdateQuantity(deviceId, item.Quantity - 1);
+        }
     }
 }
