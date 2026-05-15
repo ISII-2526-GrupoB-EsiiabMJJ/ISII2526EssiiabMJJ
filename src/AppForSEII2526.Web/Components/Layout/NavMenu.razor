@@ -25,6 +25,12 @@
                         <span id="createPurchaseNavbarButton" class="bi bi-cart-plus-fill-nav-menu" aria-hidden="true"></span> Comprar dispositivo
                     </NavLink>
                 </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="repair/selectrepairsforreceipt" Match="NavLinkMatch.Prefix">
+                        <span id="createRepairNavbarButton" class="bi bi-tools-nav-menu" aria-hidden="true"></span> Contratar reparación
+                    </NavLink>
+                </div>
             </Authorized>
         </AuthorizeView>
 
@@ -33,6 +39,7 @@
                 <span id="createReviewNavbarButton" class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create review
             </NavLink>
         </div>
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="/rent/listdevicesforrenting">
                 <span id="createRentalNavbarButton" class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Create rental
@@ -110,4 +117,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
