@@ -12,69 +12,161 @@ namespace AppForSEII2526.API.Data
         public static async Task Initialize(IServiceProvider serviceProvider)
         {
             using var scope = serviceProvider.CreateScope();
+
             var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var existingUser1 = await userManager.FindByEmailAsync("Pasatpetruvlad@gmail.com");
-            if (existingUser1 == null)
+            await CreateUserIfNotExists(
+                userManager,
+                "Pasatpetruvlad@gmail.com",
+                "Pepe_0114",
+                "Petru",
+                "Vlad");
+
+            await CreateUserIfNotExists(
+                userManager,
+                "jaime@uclm.es",
+                "Aa123456789@",
+                "Jaime",
+                "Catedra");
+
+            await CreateUserIfNotExists(
+                userManager,
+                "maria@uclm.es",
+                "Aa123456789@",
+                "Maria",
+                "Test");
+
+            await CreateUserIfNotExists(
+               userManager,
+               "prueba@uclm.es",
+               "Aa123456789@",
+               "Prueba",
+               "Pruebas");
+
+            SeedRepairs(context);
+        }
+
+        private static async Task CreateUserIfNotExists(
+            UserManager<ApplicationUser> userManager,
+            string email,
+            string password,
+            string name,
+            string surname)
+        {
+            var existingUser = await userManager.FindByEmailAsync(email);
+
+            if (existingUser != null)
             {
-                var user1 = new ApplicationUser
-                {
-                    UserName = "Pasatpetruvlad@gmail.com",
-                    Email = "Pasatpetruvlad@gmail.com",
-                    Name = "Petru",
-                    Surname = "Vlad",
-                    EmailConfirmed = true
-                };
-
-                var result1 = await userManager.CreateAsync(user1, "Pepe_0114");
-
-                if (!result1.Succeeded)
-                {
-                    throw new Exception("Error creando el usuario Petru: " +
-                        string.Join(", ", result1.Errors.Select(e => e.Description)));
-                }
+                return;
             }
 
-            var existingUser2 = await userManager.FindByEmailAsync("jaime@uclm.es");
-            if (existingUser2 == null)
+            var user = new ApplicationUser
             {
-                var user2 = new ApplicationUser
-                {
-                    UserName = "jaime@uclm.es",
-                    Email = "jaime@uclm.es",
-                    Name = "Jaime",
-                    Surname = "Catedra",
-                    EmailConfirmed = true
-                };
+                UserName = email,
+                Email = email,
+                Name = name,
+                Surname = surname,
+                EmailConfirmed = true
+            };
 
-                var result2 = await userManager.CreateAsync(user2, "Aa123456789@");
+            var result = await userManager.CreateAsync(user, password);
 
-                if (!result2.Succeeded)
-                {
-                    throw new Exception("Error creando el usuario Jaime: " +
-                        string.Join(", ", result2.Errors.Select(e => e.Description)));
-                }
-            }
-            var existingUser3 = await userManager.FindByEmailAsync("maria@uclm.es");
-            if (existingUser3 == null)
+            if (!result.Succeeded)
             {
-                var user3 = new ApplicationUser
-                {
-                    UserName = "maria@uclm.es",
-                    Email = "maria@uclm.es",
-                    Name = "Maria",
-                    Surname = "Test",
-                    EmailConfirmed = true
-                };
-
-                var result3 = await userManager.CreateAsync(user3, "Aa123456789@");
-
-                if (!result3.Succeeded)
-                {
-                    throw new Exception("Error creando el usuario Maria: " +
-                        string.Join(", ", result3.Errors.Select(e => e.Description)));
-                }
+                throw new Exception($"Error creando el usuario {email}: " +
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
             }
+        }
+
+        private static void SeedRepairs(ApplicationDbContext context)
+        {
+            var basicScale = GetOrCreateScale(context, "Básica");
+            var mediumScale = GetOrCreateScale(context, "Media");
+            var luxuryScale = GetOrCreateScale(context, "Lujo");
+
+            AddRepairIfNotExists(
+                context,
+                "Cambio de pantalla",
+                "Sustitución de pantalla rota o dañada.",
+                89.99m,
+                basicScale);
+
+            AddRepairIfNotExists(
+                context,
+                "Cambio de batería",
+                "Sustitución de batería degradada o defectuosa.",
+                49.99m,
+                mediumScale);
+
+            AddRepairIfNotExists(
+                context,
+                "Reparación de placa base",
+                "Diagnóstico y reparación avanzada de placa base.",
+                149.99m,
+                luxuryScale);
+
+            AddRepairIfNotExists(
+                context,
+                "Reparación de conector de carga",
+                "Sustitución o reparación del puerto de carga del dispositivo.",
+                59.99m,
+                basicScale);
+
+            AddRepairIfNotExists(
+                context,
+                "Sustitución de cámara",
+                "Cambio del módulo de cámara trasera o frontal.",
+                74.99m,
+                mediumScale);
+
+            AddRepairIfNotExists(
+                context,
+                "Diagnóstico completo",
+                "Revisión completa del dispositivo y detección de averías.",
+                29.99m,
+                luxuryScale);
+
+            context.SaveChanges();
+        }
+
+        private static Scale GetOrCreateScale(ApplicationDbContext context, string name)
+        {
+            var scale = context.Scales.FirstOrDefault(s => s.Name == name);
+
+            if (scale != null)
+            {
+                return scale;
+            }
+
+            scale = new Scale(name);
+
+            context.Scales.Add(scale);
+            context.SaveChanges();
+
+            return scale;
+        }
+
+        private static void AddRepairIfNotExists(
+            ApplicationDbContext context,
+            string name,
+            string description,
+            decimal cost,
+            Scale scale)
+        {
+            var exists = context.Repairs.Any(r => r.Name == name);
+
+            if (exists)
+            {
+                return;
+            }
+
+            var repair = new Repair(name, description, cost, scale.Id)
+            {
+                Scale = scale
+            };
+
+            context.Repairs.Add(repair);
         }
     }
 }
