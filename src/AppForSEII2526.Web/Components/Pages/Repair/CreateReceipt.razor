@@ -31,7 +31,7 @@ else
 {
     @if (ValidationErrors.Any())
     {
-        <div class="alert alert-danger">
+        <div id="receiptValidationErrors" class="alert alert-danger">
             <strong>Revisa los siguientes errores:</strong>
             <ul class="mb-0">
                 @foreach (var error in ValidationErrors)
@@ -55,7 +55,7 @@ else
         </div>
 
         <div class="card-body">
-            <table class="table table-bordered align-middle">
+            <table id="TableOfReceiptItems" class="table table-bordered align-middle">
                 <thead>
                     <tr>
                         <th>Reparación</th>
@@ -72,9 +72,11 @@ else
                             <td>@repair.Scale</td>
                             <td class="text-end">@repair.Cost.ToString("0.00") €</td>
                             <td>
-                                <InputText class="form-control"
-                                           placeholder="Ejemplo: iPhone 13, Samsung S22..."
-                                           @bind-Value="GetReceiptItem(repair.Id).Model" />
+                                <input id="@($"repairModel_{repair.Id}")"
+                                       class="form-control"
+                                       placeholder="Ejemplo: iPhone 13, Samsung S22..."
+                                       value="@GetReceiptItem(repair.Id).Model"
+                                       @oninput="(e) => UpdateRepairModel(repair.Id, e.Value?.ToString())" />
                             </td>
                         </tr>
                     }
@@ -123,13 +125,15 @@ else
     </div>
 
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary"
+        <button id="modifyReceiptCart"
+                class="btn btn-outline-secondary"
                 type="button"
                 @onclick="GoBackToSelection">
             Modificar reparaciones
         </button>
 
-        <button class="btn btn-success"
+        <button id="saveReceiptButton"
+                class="btn btn-success"
                 type="button"
                 disabled="@IsSaving"
                 @onclick="SaveReceipt">
@@ -139,13 +143,52 @@ else
 }
 
 @code {
+    [SupplyParameterFromQuery(Name = "repairIds")]
+    public string? RepairIds { get; set; }
+
     private bool IsSaving { get; set; }
     private string? ErrorMessage { get; set; }
     private List<string> ValidationErrors { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await RebuildCartFromQueryIfNeeded();
         await SetCurrentUserName();
+    }
+
+    private async Task RebuildCartFromQueryIfNeeded()
+    {
+        if (RepairState.HasItems)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(RepairIds))
+        {
+            return;
+        }
+
+        var selectedIds = RepairIds
+            .Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(idText =>
+            {
+                var parsed = int.TryParse(idText, out var id);
+                return parsed ? id : 0;
+            })
+            .Where(id => id > 0)
+            .ToList();
+
+        if (!selectedIds.Any())
+        {
+            return;
+        }
+
+        var allRepairs = await ApiClient.GetRepairsForReceiptAsync(null, null);
+
+        foreach (var repair in allRepairs.Where(repair => selectedIds.Contains(repair.Id)))
+        {
+            RepairState.AddRepair(repair);
+        }
     }
 
     private async Task SetCurrentUserName()
@@ -175,6 +218,11 @@ else
         }
 
         return item;
+    }
+
+    private void UpdateRepairModel(int repairId, string? model)
+    {
+        RepairState.UpdateModel(repairId, model);
     }
 
     private async Task SaveReceipt()

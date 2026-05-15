@@ -38,17 +38,17 @@ else if (Receipt is null)
 }
 else
 {
-    <div class="card mb-4">
+    <div id="receiptDetail" class="card mb-4">
         <div class="card-header">
             <strong>Datos del recibo</strong>
         </div>
 
         <div class="card-body">
-            <p><strong>Cliente:</strong> @Receipt.CustomerNameSurname</p>
-            <p><strong>Dirección:</strong> @Receipt.DeliveryAddress</p>
-            <p><strong>Fecha de operación:</strong> @Receipt.ReceiptDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
-            <p><strong>Método de pago:</strong> @GetPaymentMethodText(Receipt.PaymentMethod)</p>
-            <p><strong>Precio total:</strong> @Receipt.TotalPrice.ToString("0.00") €</p>
+            <p><strong>Cliente:</strong> <span id="receiptCustomerName">@Receipt.CustomerNameSurname</span></p>
+            <p><strong>Dirección:</strong> <span id="receiptDeliveryAddress">@Receipt.DeliveryAddress</span></p>
+            <p><strong>Fecha de operación:</strong> <span id="receiptDate">@Receipt.ReceiptDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span></p>
+            <p><strong>Método de pago:</strong> <span id="receiptPaymentMethod">@GetPaymentMethodText(Receipt.PaymentMethod)</span></p>
+            <p><strong>Precio total:</strong> <span id="receiptTotalPrice">@Receipt.TotalPrice.ToString("0.00") €</span></p>
         </div>
     </div>
 
@@ -66,7 +66,7 @@ else
             }
             else
             {
-                <table class="table table-striped table-hover align-middle">
+                <table id="ReceiptItemsTable" class="table table-striped table-hover align-middle">
                     <thead>
                         <tr>
                             <th>Reparación</th>
@@ -93,7 +93,10 @@ else
         </div>
     </div>
 
-    <button class="btn btn-primary" type="button" @onclick="GoToSelection">
+    <button id="newReceiptButton"
+            class="btn btn-primary"
+            type="button"
+            @onclick="GoToSelection">
         Contratar otra reparación
     </button>
 }
