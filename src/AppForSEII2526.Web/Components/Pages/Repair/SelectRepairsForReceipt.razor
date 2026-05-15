@@ -1,10 +1,13 @@
 ﻿@page "/repair/selectrepairsforreceipt"
 @attribute [Authorize]
+@implements IDisposable
 
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
 
 @inject AppForSEII2526APIClient ApiClient
+@inject RepairStateContainer RepairState
+@inject NavigationManager Navigation
 @inject ILogger<SelectRepairsForReceipt> Logger
 
 <h3>Contratar reparación</h3>
@@ -37,7 +40,7 @@
                            placeholder="Lujo, media o básica" />
             </div>
 
-            <div class="col-md-2 d-flex align-items-end gap-2">
+            <div class="col-md-2 d-flex align-items-end">
                 <button class="btn btn-primary w-100"
                         type="button"
                         @onclick="SearchRepairs">
@@ -58,46 +61,108 @@
 
 @if (IsLoading)
 {
-    <div class="alert alert-info">
-        Cargando reparaciones...
-    </div>
+        <div class="alert alert-info">
+            Cargando reparaciones...
+        </div>
 }
 else if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
-    <div class="alert alert-danger">
+        <div class="alert alert-danger">
         @ErrorMessage
-    </div>
+        </div>
 }
 else if (Repairs is null || !Repairs.Any())
 {
-    <div class="alert alert-warning">
-        No hay reparaciones disponibles con los filtros seleccionados.
-    </div>
+        <div class="alert alert-warning">
+            No hay reparaciones disponibles con los filtros seleccionados.
+        </div>
 }
 else
 {
-    <table class="table table-striped table-hover align-middle">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Escala</th>
-                <th>Descripción</th>
-                <th class="text-end">Coste</th>
-            </tr>
-        </thead>
-        <tbody>
+        <table class="table table-striped table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Escala</th>
+                    <th>Descripción</th>
+                    <th class="text-end">Coste</th>
+                    <th class="text-center">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
             @foreach (var repair in Repairs)
             {
-                <tr>
-                    <td>@repair.Name</td>
-                    <td>@repair.Scale</td>
-                    <td>@repair.Description</td>
-                    <td class="text-end">@repair.Cost.ToString("0.00") €</td>
-                </tr>
+                        <tr>
+                            <td>@repair.Name</td>
+                            <td>@repair.Scale</td>
+                            <td>@repair.Description</td>
+                            <td class="text-end">@repair.Cost.ToString("0.00") €</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-success"
+                                        type="button"
+                                        disabled="@RepairState.ContainsRepair(repair.Id)"
+                                        @onclick="() => AddRepairToCart(repair)">
+                            @(RepairState.ContainsRepair(repair.Id) ? "Añadida" : "Añadir")
+                                </button>
+                            </td>
+                        </tr>
             }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 }
+
+<hr />
+
+<h4>Carrito de reparación</h4>
+
+@if (!RepairState.HasItems)
+{
+        <div class="alert alert-info">
+            Añade al menos una reparación al carrito para continuar con la contratación.
+        </div>
+}
+else
+{
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Escala</th>
+                    <th class="text-end">Coste</th>
+                    <th class="text-center">Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var repair in RepairState.SelectedRepairs)
+            {
+                        <tr>
+                            <td>@repair.Name</td>
+                            <td>@repair.Scale</td>
+                            <td class="text-end">@repair.Cost.ToString("0.00") €</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-danger"
+                                        type="button"
+                                        @onclick="() => RemoveRepairFromCart(repair.Id)">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+            }
+            </tbody>
+        </table>
+
+        <div class="text-end mb-3">
+            <strong>Total: @RepairState.TotalPrice.ToString("0.00") €</strong>
+        </div>
+}
+
+<button class="btn btn-primary"
+        type="button"
+        disabled="@(!RepairState.HasItems)"
+        title="@GetContinueButtonTitle()"
+        @onclick="ContinueReceipt">
+    Continuar
+</button>
 
 @code {
     private string? RepairNameFilter { get; set; }
@@ -110,6 +175,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        RepairState.OnChange += StateHasChanged;
         await SearchRepairs();
     }
 
@@ -142,11 +208,43 @@ else
         }
     }
 
+    private void AddRepairToCart(RepairForReceiptDTO repair)
+    {
+        RepairState.AddRepair(repair);
+    }
+
+    private void RemoveRepairFromCart(int repairId)
+    {
+        RepairState.RemoveRepair(repairId);
+    }
+
+    private void ContinueReceipt()
+    {
+        if (!RepairState.HasItems)
+        {
+            return;
+        }
+
+        Navigation.NavigateTo("/repair/createreceipt");
+    }
+
+    private string GetContinueButtonTitle()
+    {
+        return RepairState.HasItems
+            ? "Continuar con la contratación de reparación"
+            : "Añade al menos una reparación al carrito para continuar";
+    }
+
     private async Task ClearFilters()
     {
         RepairNameFilter = null;
         ScaleFilter = null;
 
         await SearchRepairs();
+    }
+
+    public void Dispose()
+    {
+        RepairState.OnChange -= StateHasChanged;
     }
 }

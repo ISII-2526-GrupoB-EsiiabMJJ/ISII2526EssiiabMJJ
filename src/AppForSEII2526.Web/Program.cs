@@ -42,6 +42,8 @@ builder.Services.AddScoped<ReviewStateContainer>();
 builder.Services.AddScoped<RentalStateContainer>();
 //incorporacion de PurchaseStateContainer
 builder.Services.AddScoped<PurchaseStateContainer>();
+//incorporacion de RepairStateContainer
+builder.Services.AddScoped<RepairStateContainer>();
 //incorporacion del clientAPI
 builder.Services.AddHttpClient(); // Registra el HttpClientFactory
 
