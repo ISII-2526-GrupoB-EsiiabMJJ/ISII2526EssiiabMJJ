@@ -26,7 +26,7 @@ public class CreatePurchasePageObject : PageObject
 
     public void FillCustomerData(string name, string surname, string deliveryAddress)
     {
-        WaitForBeingVisible(_purchaseName);
+        WaitForCreatePurchasePage();
 
         _driver.FindElement(_purchaseName).Clear();
         _driver.FindElement(_purchaseName).SendKeys(name);
@@ -49,12 +49,6 @@ public class CreatePurchasePageObject : PageObject
     {
         WaitForBeingClickable(_savePurchase);
         _driver.FindElement(_savePurchase).Click();
-    }
-
-    public void ModifyCart()
-    {
-        WaitForBeingClickable(_modifyPurchaseCart);
-        _driver.FindElement(_modifyPurchaseCart).Click();
     }
 
     public string GetTotalQuantity()
@@ -87,5 +81,31 @@ public class CreatePurchasePageObject : PageObject
     public bool HasCreatePurchaseError()
     {
         return _driver.FindElements(_createPurchaseError).Any();
+    }
+
+    public void WaitForCreatePurchasePage()
+    {
+        WaitForBeingVisible(_purchaseName);
+        WaitForBeingVisible(_purchaseSurname);
+        WaitForBeingVisible(_purchaseDeliveryAddress);
+        WaitForBeingVisible(_paymentMethodSelected);
+    }
+
+    public void SavePurchaseAndWaitForDetail()
+    {
+        WaitForBeingClickable(_savePurchase);
+        _driver.FindElement(_savePurchase).Click();
+
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
+        wait.Until(d => d.Url.ToLower().Contains("detailpurchase"));
+    }
+
+    public void ModifyCartAndWaitForSelection()
+    {
+        WaitForBeingClickable(_modifyPurchaseCart);
+        _driver.FindElement(_modifyPurchaseCart).Click();
+
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
+        wait.Until(d => d.FindElements(By.Id("TableOfDevices")).Any());
     }
 }

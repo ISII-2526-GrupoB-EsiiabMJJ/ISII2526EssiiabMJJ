@@ -1,9 +1,4 @@
-﻿using AppForSEII2526.UIT.Shared.CU_Compras;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using Xunit;
-using Xunit.Abstractions;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace AppForSEII2526.UIT.Shared.CU_Compras;
 
@@ -66,7 +61,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
     {
         InitialStepsForPurchaseDevices_UIT();
 
-        selectDevices.AddDevice(deviceName1);
+        selectDevices.AddDevice(deviceName3);
         selectDevices.ContinuePurchase();
 
         var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
@@ -74,10 +69,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         createPurchase.FillCustomerData(customerName, customerSurname, deliveryAddress);
         createPurchase.SelectPaymentMethod(paymentMethod);
-        createPurchase.SavePurchase();
-
-        var waitUrl = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
-        waitUrl.Until(d => d.Url.ToLower().Contains("detailpurchase"));
+        createPurchase.SavePurchaseAndWaitForDetail();
 
         _output.WriteLine($"[{paymentMethod}] URL FINAL: " + _driver.Url);
 
@@ -87,6 +79,8 @@ public class UCPurchaseDevices_UIT : UC_UIT
         Assert.Contains(customerSurname, detailPurchase.GetCustomerSurname());
         Assert.Contains(deliveryAddress, detailPurchase.GetDeliveryAddress());
         Assert.True(detailPurchase.IsItemsTableVisible());
+        Assert.Contains("Cantidad total", detailPurchase.GetTotalQuantity());
+        Assert.Contains("Precio total", detailPurchase.GetTotalPrice());
     }
 
     [Fact]
@@ -111,13 +105,13 @@ public class UCPurchaseDevices_UIT : UC_UIT
     {
         InitialStepsForPurchaseDevices_UIT();
 
-        selectDevices.SearchByName(deviceName1);
+        selectDevices.SearchByName(deviceName2);
 
-        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-        wait.Until(d => d.PageSource.Contains(deviceName1));
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+        wait.Until(d => d.PageSource.Contains(deviceName2));
 
-        Assert.Contains(deviceName1, _driver.PageSource);
-        Assert.DoesNotContain(deviceName2, _driver.PageSource);
+        Assert.Contains(deviceName2, _driver.PageSource);
+        Assert.DoesNotContain(deviceName1, _driver.PageSource);
     }
 
     [Fact]
@@ -233,12 +227,9 @@ public class UCPurchaseDevices_UIT : UC_UIT
         createPurchase.FillCustomerData(customerName, customerSurname, deliveryAddress);
         createPurchase.SelectPaymentMethod("CreditCard");
 
-        createPurchase.ModifyCart();
+        createPurchase.ModifyCartAndWaitForSelection();
 
-        var waitDevices = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
-        waitDevices.Until(d => d.FindElements(By.Id("TableOfDevices")).Count > 0);
-
-        selectDevices.AddDevice(deviceName2);
+        selectDevices.AddDevice(deviceName3);
         selectDevices.ContinuePurchase();
 
         waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
