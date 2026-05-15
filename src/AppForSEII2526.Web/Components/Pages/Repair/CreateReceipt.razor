@@ -1,0 +1,254 @@
+﻿@page "/repair/createreceipt"
+@attribute [Authorize]
+
+@using AppForSEII2526.Web.API
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject RepairStateContainer RepairState
+@inject AppForSEII2526APIClient ApiClient
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<CreateReceipt> Logger
+
+<h3>Confirmar reparación</h3>
+
+<p>
+    Revisa las reparaciones seleccionadas e introduce los datos necesarios para generar el recibo.
+</p>
+
+@if (!RepairState.HasItems)
+{
+    <div class="alert alert-warning">
+        No hay reparaciones seleccionadas. Vuelve a la pantalla anterior para añadir reparaciones al carrito.
+    </div>
+
+    <button class="btn btn-primary" type="button" @onclick="GoBackToSelection">
+        Volver a seleccionar reparaciones
+    </button>
+}
+else
+{
+    @if (ValidationErrors.Any())
+    {
+        <div class="alert alert-danger">
+            <strong>Revisa los siguientes errores:</strong>
+            <ul class="mb-0">
+                @foreach (var error in ValidationErrors)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            @ErrorMessage
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Reparaciones seleccionadas</strong>
+        </div>
+
+        <div class="card-body">
+            <table class="table table-bordered align-middle">
+                <thead>
+                    <tr>
+                        <th>Reparación</th>
+                        <th>Escala</th>
+                        <th class="text-end">Coste</th>
+                        <th>Modelo del dispositivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var repair in RepairState.SelectedRepairs)
+                    {
+                        <tr>
+                            <td>@repair.Name</td>
+                            <td>@repair.Scale</td>
+                            <td class="text-end">@repair.Cost.ToString("0.00") €</td>
+                            <td>
+                                <InputText class="form-control"
+                                           placeholder="Ejemplo: iPhone 13, Samsung S22..."
+                                           @bind-Value="GetReceiptItem(repair.Id).Model" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="text-end">
+                <strong>Total: @RepairState.TotalPrice.ToString("0.00") €</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>Datos del cliente</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label" for="customerNameSurname">Nombre y apellidos</label>
+                <InputText id="customerNameSurname"
+                           class="form-control"
+                           @bind-Value="RepairState.CustomerNameSurname"
+                           placeholder="Introduce tu nombre y apellidos" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="deliveryAddress">Dirección de entrega</label>
+                <InputText id="deliveryAddress"
+                           class="form-control"
+                           @bind-Value="RepairState.DeliveryAddress"
+                           placeholder="Introduce la dirección de entrega" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="paymentMethod">Método de pago</label>
+                <InputSelect id="paymentMethod"
+                             class="form-select"
+                             @bind-Value="RepairState.PaymentMethod">
+                    <option value="@PaymentMethodTypes.CreditCard">Tarjeta de crédito</option>
+                    <option value="@PaymentMethodTypes.PayPal">PayPal</option>
+                    <option value="@PaymentMethodTypes.Cash">Efectivo</option>
+                </InputSelect>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary"
+                type="button"
+                @onclick="GoBackToSelection">
+            Modificar reparaciones
+        </button>
+
+        <button class="btn btn-success"
+                type="button"
+                disabled="@IsSaving"
+                @onclick="SaveReceipt">
+            @(IsSaving ? "Guardando..." : "Guardar recibo")
+        </button>
+    </div>
+}
+
+@code {
+    private bool IsSaving { get; set; }
+    private string? ErrorMessage { get; set; }
+    private List<string> ValidationErrors { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SetCurrentUserName();
+    }
+
+    private async Task SetCurrentUserName()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userName = authenticationState.User.Identity?.Name;
+
+        if (!string.IsNullOrWhiteSpace(userName))
+        {
+            RepairState.CustomerUserName = userName;
+        }
+    }
+
+    private ReceiptItemForCreateDTO GetReceiptItem(int repairId)
+    {
+        var item = RepairState.ReceiptItems.FirstOrDefault(receiptItem => receiptItem.RepairId == repairId);
+
+        if (item is null)
+        {
+            item = new ReceiptItemForCreateDTO
+                {
+                    RepairId = repairId,
+                    Model = string.Empty
+                };
+
+            RepairState.ReceiptItems.Add(item);
+        }
+
+        return item;
+    }
+
+    private async Task SaveReceipt()
+    {
+        ValidationErrors.Clear();
+        ErrorMessage = null;
+
+        await SetCurrentUserName();
+
+        ValidateReceipt();
+
+        if (ValidationErrors.Any())
+        {
+            return;
+        }
+
+        IsSaving = true;
+
+        try
+        {
+            var receiptForCreate = RepairState.ToReceiptForCreateDTO();
+
+            var createdReceipt = await ApiClient.CreateReceiptAsync(receiptForCreate);
+
+            RepairState.Clear();
+
+            Navigation.NavigateTo($"/repair/detailreceipt/{createdReceipt.Id}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating repair receipt");
+            ErrorMessage = $"No se ha podido crear el recibo: {ex.Message}";
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private void ValidateReceipt()
+    {
+        if (!RepairState.HasItems)
+        {
+            ValidationErrors.Add("Debe seleccionar al menos una reparación.");
+        }
+
+        if (string.IsNullOrWhiteSpace(RepairState.CustomerUserName))
+        {
+            ValidationErrors.Add("El usuario debe estar autenticado para contratar una reparación.");
+        }
+
+        if (string.IsNullOrWhiteSpace(RepairState.CustomerNameSurname))
+        {
+            ValidationErrors.Add("El nombre y apellidos son obligatorios.");
+        }
+
+        if (string.IsNullOrWhiteSpace(RepairState.DeliveryAddress))
+        {
+            ValidationErrors.Add("La dirección de entrega es obligatoria.");
+        }
+
+        foreach (var item in RepairState.ReceiptItems)
+        {
+            var repair = RepairState.SelectedRepairs.FirstOrDefault(selectedRepair => selectedRepair.Id == item.RepairId);
+
+            if (string.IsNullOrWhiteSpace(item.Model))
+            {
+                ValidationErrors.Add($"Debe introducir el modelo del dispositivo para la reparación: {repair?.Name ?? item.RepairId.ToString()}.");
+            }
+        }
+    }
+
+    private void GoBackToSelection()
+    {
+        Navigation.NavigateTo("/repair/selectrepairsforreceipt");
+    }
+}
