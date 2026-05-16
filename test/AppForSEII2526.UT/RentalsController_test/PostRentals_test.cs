@@ -17,7 +17,7 @@ namespace AppForSEII2526.UT.RentalsController_test
     {
         private const string _userName = "petru.vlad@uclm.es";
         private const string _customerNameSurname = "Petru Vlad";
-        private const string _deliveryAddress = "Calle Luna 45";
+        private const string _deliveryAddress = "Albacete";
 
         private const string _device1Name = "RTX 5090 Founders Edition";
         private const string _device2Name = "RTX 5080 Gaming Pro";

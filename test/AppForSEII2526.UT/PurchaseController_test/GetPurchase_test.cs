@@ -39,7 +39,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new List<PurchaseItem>()
             );
 
-            var user = new ApplicationUser("1", "Maria", "Diaz", "maria@uclm.es")
+            var user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
                 Email = "maria@uclm.es"
@@ -49,9 +49,9 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 1,
                 "maria@uclm.es",
                 "Maria",
-                "Diaz",
+                "Torres",
                 user,
-                "Calle Luna 45",
+                "Albacete",
                 new DateTime(2026, 5, 5, 10, 0, 0, DateTimeKind.Utc),
                 new List<PurchaseItem>(),
                 PaymentMethod.CreditCard
@@ -93,8 +93,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
 
             Assert.Equal(_purchase.Id, purchaseDetail.Id);
             Assert.Equal("Maria", purchaseDetail.Name);
-            Assert.Equal("Diaz", purchaseDetail.Surname);
-            Assert.Equal("Calle Luna 45", purchaseDetail.DeliveryAddress);
+            Assert.Equal("Torres", purchaseDetail.Surname);
+            Assert.Equal("Albacete", purchaseDetail.DeliveryAddress);
             Assert.Equal(_purchase.PurchaseDateUtc, purchaseDetail.PurchaseDateUtc);
             Assert.Equal(1999.98, purchaseDetail.TotalPrice, 2);
             Assert.Equal(2, purchaseDetail.TotalQuantity);

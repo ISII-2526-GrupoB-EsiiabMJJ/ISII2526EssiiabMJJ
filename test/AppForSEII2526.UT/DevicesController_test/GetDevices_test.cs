@@ -49,7 +49,7 @@ namespace AppForSEII2526.UT.DevicesController_test
                 });
             }
 
-            var rental = new Rental("Petru", "Vlad", user, "Calle Luna 45",
+            var rental = new Rental("Petru", "Vlad", user, "Albacete",
                 DateTime.Parse("2025-11-01"), PaymentMethodTypes.CreditCard,
                 DateTime.Parse("2025-11-01"), DateTime.Parse("2025-11-04"), rentDevices);
 

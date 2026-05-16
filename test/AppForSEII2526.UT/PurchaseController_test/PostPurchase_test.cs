@@ -63,7 +63,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new List<PurchaseItem>()
             );
 
-            _user = new ApplicationUser("1", "Maria", "Diaz", "maria@uclm.es")
+            _user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
                 Email = "maria@uclm.es"
@@ -88,8 +88,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
             var purchaseForCreate = new PurchaseForCreateDTO(
                 "maria@uclm.es",
                 "Maria",
-                "Diaz",
-                "Calle Luna 45",
+                "Torres",
+                "Albacete",
                 PaymentMethod.CreditCard,
                 new List<PurchaseItemDTO>
                 {
@@ -111,8 +111,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
             var purchaseDetail = Assert.IsType<PurchaseDetailDTO>(createdResult.Value);
 
             Assert.Equal("Maria", purchaseDetail.Name);
-            Assert.Equal("Diaz", purchaseDetail.Surname);
-            Assert.Equal("Calle Luna 45", purchaseDetail.DeliveryAddress);
+            Assert.Equal("Torres", purchaseDetail.Surname);
+            Assert.Equal("Albacete", purchaseDetail.DeliveryAddress);
             Assert.Equal(1999.98, purchaseDetail.TotalPrice, 2);
             Assert.Equal(2, purchaseDetail.TotalQuantity);
             Assert.Single(purchaseDetail.PurchaseItems);
@@ -129,6 +129,70 @@ namespace AppForSEII2526.UT.PurchasesController_test
             Assert.Single(_context.PurchaseItems);
         }
 
+        [Fact]
+        [Trait("Database", "WithoutFixture")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_NullPurchase_ReturnsBadRequest()
+        {
+            // Arrange
+            var controller = new PurchasesController(
+                _context,
+                new Mock<ILogger<PurchasesController>>().Object);
+
+            // Act
+            var result = await controller.CreatePurchase(null!);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var validationProblem = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+
+            Assert.Contains("Purchase", validationProblem.Errors.Keys);
+            Assert.Contains(
+                "La compra no puede ser nula",
+                validationProblem.Errors["Purchase"]);
+        }
+
+        [Fact]
+        [Trait("Database", "WithoutFixture")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_DeviceNotFound_ReturnsBadRequest()
+        {
+            var controller = new PurchasesController(
+                _context,
+                new Mock<ILogger<PurchasesController>>().Object);
+
+            var purchaseForCreate = new PurchaseForCreateDTO(
+                "maria@uclm.es",
+                "Maria",
+                "Torres",
+                "Albacete",
+                PaymentMethod.CreditCard,
+                new List<PurchaseItemDTO>
+                {
+                    new PurchaseItemDTO(
+                        999,
+                        "Marca inexistente",
+                        "Modelo inexistente",
+                        "Negro",
+                        999.99m,
+                        1,
+                        "Descripción")
+                        });
+
+            var result = await controller.CreatePurchase(purchaseForCreate);
+
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var validationProblem = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+
+            Assert.Contains("Device", validationProblem.Errors.Keys);
+            Assert.Contains(
+                "El dispositivo con id 999 no existe",
+                validationProblem.Errors["Device"]);
+
+            Assert.Empty(_context.Purchases);
+            Assert.Empty(_context.PurchaseItems);
+        }
+
         public static IEnumerable<object[]> TestCasesFor_CreatePurchase_BadRequest()
         {
             yield return new object[]
@@ -136,8 +200,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "maria@uclm.es",
                     "Maria",
-                    "Diaz",
-                    "Calle Luna 45",
+                    "Torres",
+                    "Albacete",
                     PaymentMethod.CreditCard,
                     new List<PurchaseItemDTO>()),
                 "PurchaseItems"
@@ -148,8 +212,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "noexiste@uclm.es",
                     "Maria",
-                    "Diaz",
-                    "Calle Luna 45",
+                    "Torres",
+                    "Albacete",
                     PaymentMethod.CreditCard,
                     new List<PurchaseItemDTO>
                     {
@@ -170,7 +234,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "maria@uclm.es",
                     "Maria",
-                    "Diaz",
+                    "Torres",
                     "",
                     PaymentMethod.CreditCard,
                     new List<PurchaseItemDTO>
@@ -192,8 +256,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "maria@uclm.es",
                     "Maria",
-                    "Diaz",
-                    "Calle Luna 45",
+                    "Torres",
+                    "Albacete",
                     PaymentMethod.Cash,
                     new List<PurchaseItemDTO>
                     {
@@ -214,8 +278,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "maria@uclm.es",
                     "Maria",
-                    "Diaz",
-                    "Calle Luna 45",
+                    "Torres",
+                    "Albacete",
                     PaymentMethod.CreditCard,
                     new List<PurchaseItemDTO>
                     {
@@ -236,8 +300,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new PurchaseForCreateDTO(
                     "maria@uclm.es",
                     "Maria",
-                    "Diaz",
-                    "Calle Luna 45",
+                    "Torres",
+                    "Albacete",
                     PaymentMethod.CreditCard,
                     new List<PurchaseItemDTO>
                     {

@@ -112,8 +112,8 @@ namespace AppForSEII2526.API.Controllers
 				return BadRequest(new ValidationProblemDetails(ModelState));
 			}
 
-			var user = await _context.Users
-				.FirstOrDefaultAsync(au => au.UserName == purchaseForCreate.CustomerUserName);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(au => au.UserName == purchaseForCreate.CustomerUserName);
 
             if (user == null)
             {
@@ -125,8 +125,8 @@ namespace AppForSEII2526.API.Controllers
             }
 
             var purchase = new Purchase(
-				purchaseForCreate.CustomerUserName,
-				purchaseForCreate.Name,
+                purchaseForCreate.CustomerUserName,
+                            purchaseForCreate.Name,
 				purchaseForCreate.Surname,
 				user,
 				purchaseForCreate.DeliveryAddress,

@@ -35,7 +35,7 @@ namespace AppForSEII2526.UT.ReceiptsController_test
                 Scale = mediumScale
             };
 
-            _user = new ApplicationUser("1", "Maria", "Diaz", "maria@uclm.es")
+            _user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
                 Email = "maria@uclm.es"
@@ -58,8 +58,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
 
             var receiptForCreate = new ReceiptForCreateDTO(
                 "maria@uclm.es",
-                "Maria Diaz",
-                "Calle Luna 45",
+                "Maria Torres",
+                "Albacete",
                 PaymentMethodTypes.CreditCard,
                 new List<ReceiptItemForCreateDTO>
                 {
@@ -74,8 +74,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
 
             var receiptDetail = Assert.IsType<ReceiptDetailDTO>(createdResult.Value);
 
-            Assert.Equal("Maria Diaz", receiptDetail.CustomerNameSurname);
-            Assert.Equal("Calle Luna 45", receiptDetail.DeliveryAddress);
+            Assert.Equal("Maria Torres", receiptDetail.CustomerNameSurname);
+            Assert.Equal("Albacete", receiptDetail.DeliveryAddress);
             Assert.Equal(PaymentMethodTypes.CreditCard, receiptDetail.PaymentMethod);
             Assert.Equal(139.98m, receiptDetail.TotalPrice);
             Assert.Equal(2, receiptDetail.ReceiptItems.Count);
@@ -102,8 +102,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "maria@uclm.es",
-                    "Maria Diaz",
-                    "Calle Luna 45",
+                    "Maria Torres",
+                    "Albacete",
                     PaymentMethodTypes.CreditCard,
                     new List<ReceiptItemForCreateDTO>()),
                 "ReceiptItems"
@@ -113,8 +113,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "noexiste@uclm.es",
-                    "Maria Diaz",
-                    "Calle Luna 45",
+                    "Maria Torres",
+                    "Albacete",
                     PaymentMethodTypes.CreditCard,
                     new List<ReceiptItemForCreateDTO>
                     {
@@ -127,7 +127,7 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "maria@uclm.es",
-                    "Maria Diaz",
+                    "Maria Torres",
                     "",
                     PaymentMethodTypes.CreditCard,
                     new List<ReceiptItemForCreateDTO>
@@ -141,8 +141,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "maria@uclm.es",
-                    "Maria Diaz",
-                    "Calle Luna 45",
+                    "Maria Torres",
+                    "Albacete",
                     PaymentMethodTypes.CreditCard,
                     new List<ReceiptItemForCreateDTO>
                     {
@@ -155,8 +155,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "maria@uclm.es",
-                    "Maria Diaz",
-                    "Calle Luna 45",
+                    "Maria Torres",
+                    "Albacete",
                     PaymentMethodTypes.CreditCard,
                     new List<ReceiptItemForCreateDTO>
                     {
@@ -169,8 +169,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             {
                 new ReceiptForCreateDTO(
                     "maria@uclm.es",
-                    "Maria Diaz",
-                    "Calle Luna 45",
+                    "Maria Torres",
+                    "Albacete",
                     (PaymentMethodTypes)99,
                     new List<ReceiptItemForCreateDTO>
                     {
