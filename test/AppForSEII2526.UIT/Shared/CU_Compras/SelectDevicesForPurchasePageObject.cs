@@ -19,29 +19,51 @@ public class SelectDevicesForPurchasePageObject : PageObject
     public void SearchByName(string name)
     {
         WaitForBeingVisible(_searchDevices);
-        _driver.FindElement(_searchDevices).Clear();
-        _driver.FindElement(_searchDevices).SendKeys(name);
+
+        var searchInput = _driver.FindElement(_searchDevices);
+        searchInput.Clear();
+        searchInput.SendKeys(name);
+        searchInput.SendKeys(Keys.Tab);
+
+        WaitForBeingClickable(_searchDevicesButton);
         _driver.FindElement(_searchDevicesButton).Click();
+
+        WaitForSearchToFinish();
     }
 
     public void SearchByColor(string color)
     {
         WaitForBeingVisible(_selectColor);
-        _driver.FindElement(_selectColor).Clear();
-        _driver.FindElement(_selectColor).SendKeys(color);
+
+        var colorInput = _driver.FindElement(_selectColor);
+        colorInput.Clear();
+        colorInput.SendKeys(color);
+        colorInput.SendKeys(Keys.Tab);
+
+        WaitForBeingClickable(_searchDevicesButton);
         _driver.FindElement(_searchDevicesButton).Click();
+
+        WaitForSearchToFinish();
     }
 
     public void SearchByNameAndColor(string name, string color)
     {
         WaitForBeingVisible(_searchDevices);
-        _driver.FindElement(_searchDevices).Clear();
-        _driver.FindElement(_searchDevices).SendKeys(name);
 
-        _driver.FindElement(_selectColor).Clear();
-        _driver.FindElement(_selectColor).SendKeys(color);
+        var searchInput = _driver.FindElement(_searchDevices);
+        searchInput.Clear();
+        searchInput.SendKeys(name);
+        searchInput.SendKeys(Keys.Tab);
 
+        var colorInput = _driver.FindElement(_selectColor);
+        colorInput.Clear();
+        colorInput.SendKeys(color);
+        colorInput.SendKeys(Keys.Tab);
+
+        WaitForBeingClickable(_searchDevicesButton);
         _driver.FindElement(_searchDevicesButton).Click();
+
+        WaitForSearchToFinish();
     }
 
     public void AddDevice(string deviceName)
@@ -74,5 +96,13 @@ public class SelectDevicesForPurchasePageObject : PageObject
         var increaseButton = By.CssSelector("button[id^='increaseQuantity_']");
         WaitForBeingClickable(increaseButton);
         _driver.FindElement(increaseButton).Click();
+    }
+    private void WaitForSearchToFinish()
+    {
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+
+        wait.Until(d =>
+            d.FindElements(By.Id("TableOfDevices")).Any(e => e.Displayed) ||
+            d.FindElements(By.Id("noDevicesMessage")).Any(e => e.Displayed));
     }
 }

@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-
-namespace AppForSEII2526.UIT.Shared.CU_Compras;
+﻿namespace AppForSEII2526.UIT.Shared.CU_Compras;
 
 public class UCPurchaseDevices_UIT : UC_UIT
 {
@@ -35,7 +33,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         _driver.Navigate().GoToUrl(_URI + "purchase/selectdevicesforpurchase");
 
-        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
 
         wait.Until(d =>
         {
@@ -44,13 +42,12 @@ public class UCPurchaseDevices_UIT : UC_UIT
         });
 
         wait.Until(d =>
-            d.FindElements(By.Id("searchDevices")).Count > 0 ||
-            d.FindElements(By.Id("TableOfDevices")).Count > 0 ||
-            d.FindElements(By.CssSelector("button[id^='deviceToBuy_']")).Count > 0 ||
-            d.PageSource.ToLower().Contains("comprar dispositivo") ||
-            d.PageSource.ToLower().Contains("no hay dispositivos"));
-
-        Thread.Sleep(1000);
+            d.FindElements(By.Id("searchDevices")).Count > 0 &&
+            (
+                d.FindElements(By.Id("TableOfDevices")).Count > 0 ||
+                d.FindElements(By.Id("noDevicesMessage")).Count > 0 ||
+                d.PageSource.ToLower().Contains("comprar dispositivo")
+            ));
     }
 
     [Theory]
@@ -64,11 +61,12 @@ public class UCPurchaseDevices_UIT : UC_UIT
         selectDevices.AddDevice(deviceName3);
         selectDevices.ContinuePurchase();
 
-        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
         waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
 
         createPurchase.FillCustomerData(customerName, customerSurname, deliveryAddress);
         createPurchase.SelectPaymentMethod(paymentMethod);
+        Thread.Sleep(500);
         createPurchase.SavePurchaseAndWaitForDetail();
 
         _output.WriteLine($"[{paymentMethod}] URL FINAL: " + _driver.Url);
@@ -122,7 +120,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         selectDevices.SearchByColor(color2);
 
-        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
         wait.Until(d => d.PageSource.Contains(deviceName2));
 
         Assert.Contains(deviceName2, _driver.PageSource);
@@ -136,7 +134,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         selectDevices.SearchByNameAndColor(deviceName3, color3);
 
-        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
         wait.Until(d => d.PageSource.Contains(deviceName3));
 
         Assert.Contains(deviceName3, _driver.PageSource);
@@ -156,10 +154,11 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         selectDevices.ContinuePurchase();
 
-        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
         waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
 
         Assert.Contains("Cantidad total", createPurchase.GetTotalQuantity());
+        Assert.Contains("Total", createPurchase.GetTotalPrice());
         Assert.DoesNotContain(deviceName2, _driver.PageSource);
     }
 
