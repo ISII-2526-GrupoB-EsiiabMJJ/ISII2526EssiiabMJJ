@@ -14,11 +14,7 @@ public class CreatePurchasePageObject : PageObject
     private readonly By _savePurchase = By.Id("savePurchase");
     private readonly By _createPurchaseTotalQuantity = By.Id("createPurchaseTotalQuantity");
     private readonly By _createPurchaseTotalPrice = By.Id("createPurchaseTotalPrice");
-    private readonly By _purchaseNameError = By.Id("purchaseNameError");
-    private readonly By _purchaseSurnameError = By.Id("purchaseSurnameError");
-    private readonly By _purchaseDeliveryAddressError = By.Id("purchaseDeliveryAddressError");
-    private readonly By _createPurchaseError = By.Id("createPurchaseError");
-
+    private readonly By _purchaseSelectedDevices = By.Id("purchaseSelectedDevices");
     public CreatePurchasePageObject(IWebDriver driver, ITestOutputHelper output)
         : base(driver, output)
     {
@@ -63,26 +59,6 @@ public class CreatePurchasePageObject : PageObject
         return _driver.FindElement(_createPurchaseTotalPrice).Text;
     }
 
-    public bool HasNameError()
-    {
-        return _driver.FindElements(_purchaseNameError).Any();
-    }
-
-    public bool HasSurnameError()
-    {
-        return _driver.FindElements(_purchaseSurnameError).Any();
-    }
-
-    public bool HasDeliveryAddressError()
-    {
-        return _driver.FindElements(_purchaseDeliveryAddressError).Any();
-    }
-
-    public bool HasCreatePurchaseError()
-    {
-        return _driver.FindElements(_createPurchaseError).Any();
-    }
-
     public void WaitForCreatePurchasePage()
     {
         WaitForBeingVisible(_purchaseName);
@@ -107,5 +83,11 @@ public class CreatePurchasePageObject : PageObject
 
         var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(15));
         wait.Until(d => d.FindElements(By.Id("TableOfDevices")).Any());
+    }
+
+    public string GetSelectedDevicesText()
+    {
+        WaitForBeingVisible(_purchaseSelectedDevices);
+        return _driver.FindElement(_purchaseSelectedDevices).Text;
     }
 }

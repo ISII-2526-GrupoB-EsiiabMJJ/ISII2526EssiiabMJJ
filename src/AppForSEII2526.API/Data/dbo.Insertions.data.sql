@@ -3,10 +3,18 @@
 -----------------------------------------------------------
 DELETE FROM [dbo].[RentDevices];
 DELETE FROM [dbo].[Rental];
+
+DELETE FROM [dbo].[PurchaseItems];
+DELETE FROM [dbo].[Purchases];
+
 DELETE FROM [dbo].[ReviewItems];
-DELETE FROM [dbo].[Device];
 DELETE FROM [dbo].[Review];
+DELETE FROM [dbo].[Device];
+
+DELETE FROM [dbo].[AspNetUserRoles];
+DELETE FROM [dbo].[AspNetRoles];
 DELETE FROM [dbo].[AspNetUsers];
+
 DELETE FROM [dbo].[Model];
 
 -----------------------------------------------------------
@@ -19,7 +27,12 @@ VALUES
     (1, 'NVIDIA GeForce RTX 5090'),
     (2, 'NVIDIA GeForce RTX 5080'),
     (3, 'NVIDIA GeForce RTX 4080 Ti'),
-    (4, 'NVIDIA GeForce RTX 4090');
+    (4, 'NVIDIA GeForce RTX 4090'),
+
+    -- Modelos necesarios para CU ComprarDispositivo
+    (5, 'Samsung Galaxy S24'),
+    (6, 'Apple iPhone 15'),
+    (7, 'Google Pixel 8');
 
 SET IDENTITY_INSERT [dbo].[Model] OFF;
 
@@ -50,7 +63,36 @@ VALUES
 ('4', 'Jaime', 'de los campos', 'Jaime de los campos', 'JAIME DE LOS CAMPOS',
  'jaime@email.com', 'JAIME@EMAIL.COM', 1, 1,
  1, 1, 1,
- NULL, NEWID(), NEWID());
+ NULL, NEWID(), NEWID()),
+
+ ('5', 'Maria', 'Test', 'maria_test@uclm.es', 'MARIA_TEST@UCLM.ES',
+ 'maria_test@uclm.es', 'MARIA_TEST@UCLM.ES', 1, 1,
+ 1, 1, 1,
+NULL, NEWID(), NEWID()),
+
+('6', 'Maria', 'Test', 'maria@uclm.es', 'MARIA@UCLM.ES',
+ 'maria@uclm.es', 'MARIA@UCLM.ES', 0, 1,
+ 0, 0, 1,
+ 'AQAAAAIAAYagAAAAENLmWIcV18tkCAePy46+UJUSbMRb3CZ3Shuxn8LdzW9wvi7uL56TSDDXG+3od69L7g==',
+ NEWID(), NEWID());
+
+-----------------------------------------------------------
+-- ROLES
+-----------------------------------------------------------
+INSERT INTO [dbo].[AspNetRoles]
+([Id], [Name], [NormalizedName], [ConcurrencyStamp])
+VALUES
+('1', 'Cliente', 'CLIENTE', NEWID()),
+('2', 'Administrador', 'ADMINISTRADOR', NEWID());
+
+-----------------------------------------------------------
+-- USUARIOS - ROLES
+-----------------------------------------------------------
+INSERT INTO [dbo].[AspNetUserRoles]
+([UserId], [RoleId])
+VALUES
+('6', '1'),
+('5','2');
 
 -----------------------------------------------------------
 -- RESEÑAS
@@ -97,8 +139,11 @@ VALUES
     (2, 2, 2025, 2, 8, 22, 49.99, 1699.99, 'RTX 5080 Gaming Pro', 'Plata', 'MSI', 'Ideal para gaming 4K con DLSS 4.0'),
     (3, 3, 2024, 2, 6, 19, 39.99, 1299.99, 'RTX 4080 Ti Dual Fan', 'Blanco', 'Gigabyte', 'Excelente rendimiento en 1440p y eficiencia térmica'),
     (4, 1, 2025, 3, 3, 12, 64.99, 2299.99, 'RTX 5090 OC Edition', 'Rojo', 'Gigabyte', 'Versión overclockeada con triple ventilador'),
-    (5, 4, 2024, 2, 6, 19, 54.99, 1899.99, 'RTX 4090 Dual Ultimate', 'Negro', 'MSI', 'Excelente rendimiento en 4K y eficiencia persistente');
-
+    (5, 4, 2024, 2, 6, 19, 54.99, 1899.99, 'RTX 4090 Dual Ultimate', 'Negro', 'MSI', 'Excelente rendimiento en 4K y eficiencia persistente'),
+	    -- Dispositivos necesarios para CU ComprarDispositivo
+    (6, 5, 2024, 3, 0, 8, 0, 899.99, 'Galaxy S24', 'Azul', 'Samsung', 'Smartphone Samsung Galaxy S24 disponible para compra'),
+    (7, 6, 2024, 3, 0, 10, 0, 999.99, 'iPhone 15', 'Negro', 'Apple', 'Smartphone Apple iPhone 15 disponible para compra'),
+    (8, 7, 2024, 3, 0, 6, 0, 799.99, 'Pixel 8', 'Blanco', 'Google', 'Smartphone Google Pixel 8 disponible para compra');
 SET IDENTITY_INSERT [dbo].[Device] OFF;
 
 -----------------------------------------------------------

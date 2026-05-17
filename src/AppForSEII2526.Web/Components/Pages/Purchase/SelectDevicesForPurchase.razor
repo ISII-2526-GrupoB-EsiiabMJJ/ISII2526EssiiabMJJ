@@ -1,5 +1,5 @@
 ﻿@page "/purchase/selectdevicesforpurchase"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Cliente")]
 @implements IDisposable
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization

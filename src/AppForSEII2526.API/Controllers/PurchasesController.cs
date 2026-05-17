@@ -112,21 +112,21 @@ namespace AppForSEII2526.API.Controllers
 				return BadRequest(new ValidationProblemDetails(ModelState));
 			}
 
-			var user = await _context.Users
-				.FirstOrDefaultAsync(au => au.UserName == purchaseForCreate.CustomerUserName);
+            var user = await _context.Users
+                .FirstOrDefaultAsync(au => au.UserName == purchaseForCreate.CustomerUserName);
 
-			if (user == null)
-			{
-				ModelState.AddModelError(
-					"PurchaseApplicationUser",
-                    "Error! Usuario no registrado");
+            if (user == null)
+            {
+                ModelState.AddModelError(
+                    "PurchaseApplicationUser",
+                    "El usuario no está registrado");
 
                 return BadRequest(new ValidationProblemDetails(ModelState));
-			}
+            }
 
-			var purchase = new Purchase(
-				purchaseForCreate.CustomerUserName,
-				purchaseForCreate.Name,
+            var purchase = new Purchase(
+                purchaseForCreate.CustomerUserName,
+                            purchaseForCreate.Name,
 				purchaseForCreate.Surname,
 				user,
 				purchaseForCreate.DeliveryAddress,

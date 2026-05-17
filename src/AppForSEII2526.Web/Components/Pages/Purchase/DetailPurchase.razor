@@ -1,5 +1,5 @@
 ﻿@page "/purchase/detailpurchase/{PurchaseId:int}"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Cliente")]
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
 @inject AppForSEII2526APIClient ApiClient

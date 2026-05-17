@@ -1,5 +1,5 @@
 ﻿@page "/purchase/createpurchase"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Cliente")]
 @using AppForSEII2526.Web.API
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
@@ -30,13 +30,15 @@ else
 
         <h4>Dispositivos seleccionados</h4>
 
-        @foreach (var item in PurchaseState.PurchaseItems)
-        {
-            <PurchaseItem Item="item"
-                          QuantityChanged="quantity => OnQuantityChanged(item.DeviceId, quantity)"
-                          DescriptionChanged="description => OnDescriptionChanged(item.DeviceId, description)"
-                          Removed="RemoveItem" />
-        }
+        <div id="purchaseSelectedDevices">
+            @foreach (var item in PurchaseState.PurchaseItems)
+            {
+                <PurchaseItem Item="item"
+                              QuantityChanged="quantity => OnQuantityChanged(item.DeviceId, quantity)"
+                              DescriptionChanged="description => OnDescriptionChanged(item.DeviceId, description)"
+                              Removed="RemoveItem" />
+            }
+        </div>
 
         <h4>Datos de entrega</h4>
 

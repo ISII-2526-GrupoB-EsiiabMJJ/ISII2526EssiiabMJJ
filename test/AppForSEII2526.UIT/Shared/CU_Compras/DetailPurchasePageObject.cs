@@ -9,11 +9,9 @@ public class DetailPurchasePageObject : PageObject
     private readonly By _purchaseCustomerName = By.Id("purchaseCustomerName");
     private readonly By _purchaseCustomerSurname = By.Id("purchaseCustomerSurname");
     private readonly By _purchaseDeliveryAddress = By.Id("purchaseDeliveryAddress");
-    private readonly By _purchaseDate = By.Id("purchaseDate");
     private readonly By _purchaseTotalQuantity = By.Id("purchaseTotalQuantity");
     private readonly By _purchaseTotalPrice = By.Id("purchaseTotalPrice");
     private readonly By _purchaseDetailItemsTable = By.Id("PurchaseDetailItemsTable");
-    private readonly By _newPurchaseButton = By.Id("newPurchaseButton");
 
     public DetailPurchasePageObject(IWebDriver driver, ITestOutputHelper output)
         : base(driver, output)
@@ -55,14 +53,9 @@ public class DetailPurchasePageObject : PageObject
         return _driver.FindElement(_purchaseTotalPrice).Text;
     }
 
-    public bool IsItemsTableVisible()
+    public bool CheckListOfPurchasedDevices(List<string[]> expectedPurchaseItems)
     {
-        return _driver.FindElements(_purchaseDetailItemsTable).Any();
+        return CheckBodyTable(expectedPurchaseItems, _purchaseDetailItemsTable);
     }
 
-    public void StartNewPurchase()
-    {
-        WaitForBeingClickable(_newPurchaseButton);
-        _driver.FindElement(_newPurchaseButton).Click();
-    }
 }
