@@ -141,9 +141,9 @@ VALUES
     (4, 1, 2025, 3, 3, 12, 64.99, 2299.99, 'RTX 5090 OC Edition', 'Rojo', 'Gigabyte', 'Versión overclockeada con triple ventilador'),
     (5, 4, 2024, 2, 6, 19, 54.99, 1899.99, 'RTX 4090 Dual Ultimate', 'Negro', 'MSI', 'Excelente rendimiento en 4K y eficiencia persistente'),
 	    -- Dispositivos necesarios para CU ComprarDispositivo
-    (6, 5, 2024, 3, 0, 8, 0, 899.99, 'Galaxy S24', 'Blue', 'Samsung', 'Smartphone Samsung Galaxy S24 disponible para compra'),
-    (7, 6, 2024, 3, 0, 10, 0, 999.99, 'iPhone 15', 'Black', 'Apple', 'Smartphone Apple iPhone 15 disponible para compra'),
-    (8, 7, 2024, 3, 0, 6, 0, 799.99, 'Pixel 8', 'White', 'Google', 'Smartphone Google Pixel 8 disponible para compra');
+    (6, 5, 2024, 3, 0, 8, 0, 899.99, 'Galaxy S24', 'Azul', 'Samsung', 'Smartphone Samsung Galaxy S24 disponible para compra'),
+    (7, 6, 2024, 3, 0, 10, 0, 999.99, 'iPhone 15', 'Negro', 'Apple', 'Smartphone Apple iPhone 15 disponible para compra'),
+    (8, 7, 2024, 3, 0, 6, 0, 799.99, 'Pixel 8', 'Blanco', 'Google', 'Smartphone Google Pixel 8 disponible para compra');
 SET IDENTITY_INSERT [dbo].[Device] OFF;
 
 -----------------------------------------------------------
