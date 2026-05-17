@@ -14,6 +14,11 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string color2 = "Negro";
     private const string color3 = "Blanco";
 
+    private const string brand3 = "Google";
+    private const string model3 = "Google Pixel 8";
+    private const string price3 = "799,99 €";
+    private const string description3 = "Smartphone Google Pixel 8 disponible para compra";
+
     private const string customerName = "Maria";
     private const string customerSurname = "Torres";
     private const string deliveryAddress = "Albacete";
@@ -76,7 +81,20 @@ public class UCPurchaseDevices_UIT : UC_UIT
         Assert.Contains(customerName, detailPurchase.GetCustomerName());
         Assert.Contains(customerSurname, detailPurchase.GetCustomerSurname());
         Assert.Contains(deliveryAddress, detailPurchase.GetDeliveryAddress());
-        Assert.True(detailPurchase.IsItemsTableVisible());
+        var expectedPurchaseItems = new List<string[]>
+        {
+            new string[]
+            {
+                brand3,
+                model3,
+                color3,
+                price3,
+                "1"
+            }
+        };
+
+        Assert.True(detailPurchase.CheckListOfPurchasedDevices(expectedPurchaseItems),
+            "Error: los dispositivos comprados no son los esperados");
         Assert.Contains("Cantidad total", detailPurchase.GetTotalQuantity());
         Assert.Contains("Precio total", detailPurchase.GetTotalPrice());
     }

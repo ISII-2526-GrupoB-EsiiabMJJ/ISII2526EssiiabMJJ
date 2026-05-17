@@ -53,8 +53,9 @@ public class DetailPurchasePageObject : PageObject
         return _driver.FindElement(_purchaseTotalPrice).Text;
     }
 
-    public bool IsItemsTableVisible()
+    public bool CheckListOfPurchasedDevices(List<string[]> expectedPurchaseItems)
     {
-        return _driver.FindElements(_purchaseDetailItemsTable).Any();
+        return CheckBodyTable(expectedPurchaseItems, _purchaseDetailItemsTable);
     }
+
 }
