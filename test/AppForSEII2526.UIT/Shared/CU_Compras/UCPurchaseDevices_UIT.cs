@@ -2,7 +2,7 @@
 
 public class UCPurchaseDevices_UIT : UC_UIT
 {
-    private readonly SelectDevicesForPurchasePageObject selectDevices;
+    private readonly ListDevicesForPurchasePageObject selectDevices;
     private readonly CreatePurchasePageObject createPurchase;
     private readonly DetailPurchasePageObject detailPurchase;
 
@@ -10,9 +10,9 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string deviceName2 = "iPhone 15";
     private const string deviceName3 = "Pixel 8";
 
-    private const string color1 = "Blue";
-    private const string color2 = "Black";
-    private const string color3 = "White";
+    private const string color1 = "Azul";
+    private const string color2 = "Negro";
+    private const string color3 = "Blanco";
 
     private const string customerName = "Maria";
     private const string customerSurname = "Torres";
@@ -20,7 +20,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
     public UCPurchaseDevices_UIT(ITestOutputHelper output) : base(output)
     {
-        selectDevices = new SelectDevicesForPurchasePageObject(_driver, _output);
+        selectDevices = new ListDevicesForPurchasePageObject(_driver, _output);
         createPurchase = new CreatePurchasePageObject(_driver, _output);
         detailPurchase = new DetailPurchasePageObject(_driver, _output);
     }
@@ -159,7 +159,11 @@ public class UCPurchaseDevices_UIT : UC_UIT
 
         Assert.Contains("Cantidad total", createPurchase.GetTotalQuantity());
         Assert.Contains("Total", createPurchase.GetTotalPrice());
-        Assert.DoesNotContain(deviceName2, _driver.PageSource);
+
+        var selectedDevicesText = createPurchase.GetSelectedDevicesText();
+
+        Assert.DoesNotContain(deviceName1, selectedDevicesText);
+        Assert.Contains(deviceName2, selectedDevicesText);
     }
 
     [Fact]

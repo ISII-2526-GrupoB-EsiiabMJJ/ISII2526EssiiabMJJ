@@ -3,7 +3,7 @@ using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.Shared.CU_Compras;
 
-public class SelectDevicesForPurchasePageObject : PageObject
+public class ListDevicesForPurchasePageObject : PageObject
 {
     private readonly By _searchDevices = By.Id("searchDevices");
     private readonly By _selectColor = By.Id("selectColor");
@@ -11,7 +11,7 @@ public class SelectDevicesForPurchasePageObject : PageObject
     private readonly By _purchaseDevicesButton = By.Id("purchaseDevicesButton");
     private readonly By _emptyCartMessage = By.Id("emptyCartMessage");
 
-    public SelectDevicesForPurchasePageObject(IWebDriver driver, ITestOutputHelper output)
+    public ListDevicesForPurchasePageObject(IWebDriver driver, ITestOutputHelper output)
         : base(driver, output)
     {
     }
