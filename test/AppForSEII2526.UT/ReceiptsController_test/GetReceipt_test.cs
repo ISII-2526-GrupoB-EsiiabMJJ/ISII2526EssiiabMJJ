@@ -27,7 +27,7 @@ namespace AppForSEII2526.UT.ReceiptsController_test
                 Scale = scale
             };
 
-            var user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
+            var user = new ApplicationUser("1", "Maria", "Díaz", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
                 Email = "maria@uclm.es"
@@ -39,8 +39,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             _context.SaveChanges();
 
             _receipt = new Receipt(
-                "Maria Torres",
-                "Albacete",
+                "Maria Díaz",
+                "Calle Luna 45",
                 PaymentMethodTypes.PayPal,
                 new DateTime(2026, 5, 14, 10, 0, 0, DateTimeKind.Utc),
                 89.99m,
@@ -75,8 +75,8 @@ namespace AppForSEII2526.UT.ReceiptsController_test
             var receiptDetail = Assert.IsType<ReceiptDetailDTO>(okResult.Value);
 
             Assert.Equal(_receipt.Id, receiptDetail.Id);
-            Assert.Equal("Maria Torres", receiptDetail.CustomerNameSurname);
-            Assert.Equal("Albacete", receiptDetail.DeliveryAddress);
+            Assert.Equal("Maria Díaz", receiptDetail.CustomerNameSurname);
+            Assert.Equal("Calle Luna 45", receiptDetail.DeliveryAddress);
             Assert.Equal(PaymentMethodTypes.PayPal, receiptDetail.PaymentMethod);
             Assert.Equal(89.99m, receiptDetail.TotalPrice);
             Assert.Single(receiptDetail.ReceiptItems);
