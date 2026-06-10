@@ -161,6 +161,7 @@ else
         </p>
     </div>
 }
+
 <button id="purchaseDevicesButton"
         class="btn btn-primary"
         disabled="@(!PurchaseState.HasItems)"
@@ -178,17 +179,23 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Se suscribe el componente a los cambios del carrito para refrescar la interfaz
+        // cuando se añadan, eliminen o modifiquen dispositivos.
         PurchaseState.OnChange += StateHasChanged;
+
+        // Al cargar la página se muestran inicialmente los dispositivos disponibles para compra.
         await SearchDevices();
     }
 
     private async Task SearchDevices()
     {
+        // Mientras se consulta la API se muestra el estado de carga y se limpia cualquier error anterior.
         IsLoading = true;
         ErrorMessage = null;
 
         try
         {
+            // Los filtros vacíos se envían como null para que el backend no limite la búsqueda.
             var name = string.IsNullOrWhiteSpace(DeviceNameFilter)
                 ? null
                 : DeviceNameFilter.Trim();
@@ -197,10 +204,12 @@ else
                 ? null
                 : ColorFilter.Trim();
 
+            // Se obtienen los dispositivos disponibles aplicando los filtros de nombre y color.
             Devices = await ApiClient.GetDevicesForPurchaseAsync(name, color);
         }
         catch (Exception ex)
         {
+            // Si la llamada a la API falla, se informa al usuario sin romper la página.
             ErrorMessage = $"No se han podido cargar los dispositivos: {ex.Message}";
         }
         finally
@@ -211,26 +220,32 @@ else
 
     private void AddDeviceToCart(DeviceForPurchaseDTO device)
     {
+        // Añade el dispositivo al estado compartido de compra.
+        // Si ya estaba en el carrito, el estado se encarga de aumentar su cantidad.
         PurchaseState.AddDevice(device);
     }
 
     private void RemoveDeviceFromCart(int deviceId)
     {
+        // Elimina del carrito el dispositivo indicado.
         PurchaseState.RemoveDevice(deviceId);
     }
 
     private void ContinuePurchase()
     {
+        // No se permite avanzar al formulario si el carrito está vacío.
         if (!PurchaseState.HasItems)
         {
             return;
         }
 
+        // Con al menos un dispositivo seleccionado, se continúa al formulario de compra.
         Navigation.NavigateTo("/purchase/createpurchase");
     }
 
     private string GetPurchaseButtonTitle()
     {
+        // El texto de ayuda del botón explica por qué no se puede continuar si no hay dispositivos.
         return PurchaseState.HasItems
             ? "Continuar con la compra"
             : "Añade al menos un dispositivo al carrito para continuar";
@@ -238,18 +253,22 @@ else
 
     public void Dispose()
     {
+        // Se elimina la suscripción al salir de la página para evitar notificaciones innecesarias.
         PurchaseState.OnChange -= StateHasChanged;
     }
 
     private async Task ClearFilters()
     {
+        // Se limpian los filtros y se vuelve a cargar el listado completo.
         DeviceNameFilter = null;
         ColorFilter = null;
+
         await SearchDevices();
     }
 
     private void IncreaseQuantity(int deviceId)
     {
+        // Se localiza la línea del carrito y se incrementa su cantidad.
         var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
 
         if (item is not null)
@@ -260,6 +279,7 @@ else
 
     private void DecreaseQuantity(int deviceId)
     {
+        // Solo se permite disminuir la cantidad si queda al menos una unidad.
         var item = PurchaseState.PurchaseItems.FirstOrDefault(item => item.DeviceId == deviceId);
 
         if (item is not null && item.Quantity > 1)

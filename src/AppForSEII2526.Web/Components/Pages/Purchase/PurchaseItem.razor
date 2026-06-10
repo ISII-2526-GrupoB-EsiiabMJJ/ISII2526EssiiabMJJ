@@ -13,6 +13,7 @@
             <label for="@($"purchaseQuantity_{Item.DeviceId}")" class="form-label">
                 Cantidad
             </label>
+
             <input id="@($"purchaseQuantity_{Item.DeviceId}")"
                    type="number"
                    min="1"
@@ -25,6 +26,7 @@
             <label for="@($"purchaseDescription_{Item.DeviceId}")" class="form-label">
                 Descripción opcional
             </label>
+
             <textarea id="@($"purchaseDescription_{Item.DeviceId}")"
                       class="form-control"
                       rows="3"
@@ -46,35 +48,48 @@
 </div>
 
 @code {
+    // Línea de compra que se muestra en esta tarjeta.
+    // Contiene los datos del dispositivo, cantidad, precio y descripción.
     [Parameter]
     public PurchaseItemDTO Item { get; set; } = default!;
 
+    // Evento que informa al componente padre de que la cantidad ha cambiado.
     [Parameter]
     public EventCallback<int> QuantityChanged { get; set; }
 
+    // Evento que informa al componente padre de que la descripción ha cambiado.
     [Parameter]
     public EventCallback<string?> DescriptionChanged { get; set; }
 
+    // Evento que informa al componente padre de que este dispositivo debe eliminarse.
     [Parameter]
     public EventCallback<int> Removed { get; set; }
 
     private async Task OnQuantityChanged(ChangeEventArgs args)
     {
+        // Se intenta convertir el valor introducido en el input a número entero.
         if (int.TryParse(args.Value?.ToString(), out var quantity))
         {
+            // La cantidad mínima permitida es 1, aunque el usuario escriba 0 o un valor negativo.
             quantity = Math.Max(1, quantity);
+
+            // Se actualiza la cantidad local del dispositivo.
             Item.Quantity = quantity;
+
+            // Se notifica al componente padre para que actualice el estado general de la compra.
             await QuantityChanged.InvokeAsync(quantity);
         }
     }
 
     private async Task NotifyDescriptionChanged()
     {
+        // Se notifica al componente padre la descripción actual del dispositivo.
         await DescriptionChanged.InvokeAsync(Item.Description);
     }
 
     private async Task Remove()
     {
+        // Se solicita al componente padre que elimine este dispositivo del carrito.
         await Removed.InvokeAsync(Item.DeviceId);
     }
 }

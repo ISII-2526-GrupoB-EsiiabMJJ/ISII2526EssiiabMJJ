@@ -107,6 +107,7 @@ else
                 @ErrorMessage
             </div>
         }
+
         @if (ValidationErrors.ContainsKey("PurchaseItems"))
         {
             <div id="purchaseItemsError" class="text-danger mb-3">
@@ -131,29 +132,40 @@ else
 }
 
 @code {
+    // Indica si se está enviando la compra al backend para evitar dobles envíos.
     private bool IsSaving;
+
+    // Mensaje usado para mostrar errores devueltos por la API o excepciones generales.
     private string? ErrorMessage;
+
+    // Diccionario de errores de validación propios de la pantalla.
+    // La clave identifica el campo y el valor contiene el mensaje mostrado al usuario.
     private Dictionary<string, string> ValidationErrors = new();
 
     private void GoBackToCart()
     {
+        // Vuelve a la pantalla de selección manteniendo el estado actual de la compra.
         Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
     }
 
     private void OnQuantityChanged(int deviceId, int quantity)
     {
+        // Actualiza en el estado compartido la cantidad del dispositivo indicado.
         PurchaseState.UpdateQuantity(deviceId, quantity);
     }
 
     private void OnDescriptionChanged(int deviceId, string? description)
     {
+        // Actualiza en el estado compartido la descripción opcional del dispositivo.
         PurchaseState.UpdateDescription(deviceId, description);
     }
 
     private void RemoveItem(int deviceId)
     {
+        // Elimina del carrito el dispositivo indicado desde el formulario de compra.
         PurchaseState.RemoveDevice(deviceId);
 
+        // Si al eliminarlo el carrito queda vacío, se vuelve a la pantalla de selección.
         if (!PurchaseState.HasItems)
         {
             Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
@@ -162,9 +174,11 @@ else
 
     private async Task CreatePurchaseAsync()
     {
+        // Se limpian errores anteriores antes de validar y enviar la compra.
         ErrorMessage = null;
         ValidationErrors.Clear();
 
+        // Primero se validan los datos introducidos en pantalla.
         if (!ValidatePurchaseForm())
         {
             return;
@@ -174,6 +188,7 @@ else
 
         try
         {
+            // Se obtiene el usuario autenticado para asociarlo a la compra.
             var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
             var userName = authenticationState.User.Identity?.Name;
 
@@ -183,22 +198,29 @@ else
                 return;
             }
 
+            // El nombre de usuario autenticado se asigna antes de construir el DTO.
             PurchaseState.CustomerUserName = userName;
 
+            // Se convierte el estado temporal de la pantalla en el DTO que espera la API.
             var purchaseForCreate = PurchaseState.ToPurchaseForCreateDTO();
 
+            // Se envía la compra al backend.
             var createdPurchase = await ApiClient.CreatePurchaseAsync(purchaseForCreate);
 
+            // Una vez creada correctamente, se limpia el estado para iniciar futuras compras desde cero.
             PurchaseState.Clear();
 
+            // Se navega al detalle de la compra recién creada.
             Navigation.NavigateTo($"/purchase/detailpurchase/{createdPurchase.Id}");
         }
         catch (ApiException ex)
         {
+            // Si la API devuelve un error, se muestra la respuesta recibida.
             ErrorMessage = ex.Response;
         }
         catch (Exception ex)
         {
+            // Cualquier otro error se muestra como error general de creación.
             ErrorMessage = $"No se ha podido crear la compra: {ex.Message}";
         }
         finally
@@ -209,26 +231,31 @@ else
 
     private bool ValidatePurchaseForm()
     {
+        // No se puede crear una compra sin dispositivos seleccionados.
         if (!PurchaseState.HasItems)
         {
             ValidationErrors["PurchaseItems"] = "Debe añadirse al menos un dispositivo al carrito.";
         }
 
+        // El nombre del cliente es obligatorio.
         if (string.IsNullOrWhiteSpace(PurchaseState.Name))
         {
             ValidationErrors[nameof(PurchaseState.Name)] = "El nombre es obligatorio.";
         }
 
+        // Los apellidos del cliente son obligatorios.
         if (string.IsNullOrWhiteSpace(PurchaseState.Surname))
         {
             ValidationErrors[nameof(PurchaseState.Surname)] = "Los apellidos son obligatorios.";
         }
 
+        // La dirección de entrega es obligatoria para completar la compra.
         if (string.IsNullOrWhiteSpace(PurchaseState.DeliveryAddress))
         {
             ValidationErrors[nameof(PurchaseState.DeliveryAddress)] = "La dirección de entrega es obligatoria.";
         }
 
+        // Todas las líneas de compra deben tener una cantidad válida.
         foreach (var item in PurchaseState.PurchaseItems)
         {
             if (item.Quantity < 1)
@@ -238,7 +265,7 @@ else
             }
         }
 
+        // La compra solo puede enviarse si no se ha registrado ningún error.
         return !ValidationErrors.Any();
     }
-
 }

@@ -106,24 +106,32 @@ namespace AppForSEII2526.API.Controllers
             string? name,
             string? color)
         {
+            // Se normalizan los filtros de compra para permitir búsquedas parciales
+            // sin depender de mayúsculas, minúsculas o espacios extra.
             if (!string.IsNullOrEmpty(name))
                 name = name.Trim().ToLower();
 
             if (!string.IsNullOrEmpty(color))
                 color = color.Trim().ToLower();
 
+            // La consulta parte solo de dispositivos con stock disponible para compra.
             var query = _context.Device
                 .Include(d => d.Model)
                 .Where(d => d.quantityForPurchase > 0);
 
+            // Si se indica nombre, se filtra por coincidencia parcial en el nombre del dispositivo.
             if (!string.IsNullOrWhiteSpace(name))
                 query = query.Where(d => d.Name.ToLower().Contains(name));
 
+            // Si se indica color, se filtra por coincidencia parcial en el color del dispositivo.
             if (!string.IsNullOrWhiteSpace(color))
                 query = query.Where(d => d.Color.ToLower().Contains(color));
 
+            // Se ordenan los dispositivos por nombre para que la tabla se muestre de forma estable.
             var devices = await query
                 .OrderBy(d => d.Name)
+
+                // Se proyecta a un DTO específico de compra, evitando devolver la entidad completa.
                 .Select(d => new DeviceForPurchaseDTO(
                     d.Id,
                     d.Name,
@@ -137,3 +145,4 @@ namespace AppForSEII2526.API.Controllers
         }
     }
 }
+

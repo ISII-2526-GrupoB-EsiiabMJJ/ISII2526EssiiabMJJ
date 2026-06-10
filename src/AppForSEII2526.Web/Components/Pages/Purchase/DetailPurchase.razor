@@ -102,35 +102,47 @@ else if (PurchaseDetail is not null)
 }
 
 @code {
+    // Identificador recibido desde la URL para cargar el detalle de una compra concreta.
     [Parameter]
     public int PurchaseId { get; set; }
 
+    // DTO con todos los datos que se muestran en el comprobante de compra.
     private PurchaseDetailDTO? PurchaseDetail;
+
+    // Controla el mensaje de carga mientras se consulta la API.
     private bool IsLoading;
+
+    // Guarda el mensaje que se muestra si no se puede recuperar el detalle.
     private string? ErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        // Al entrar en la página se carga el detalle de la compra indicada en la ruta.
         await LoadPurchaseDetailAsync();
     }
 
     private async Task LoadPurchaseDetailAsync()
     {
+        // Se activa el estado de carga y se limpia cualquier error anterior.
         IsLoading = true;
         ErrorMessage = null;
 
         try
         {
+            // Se solicita al backend el detalle completo de la compra.
             PurchaseDetail = await ApiClient.GetPurchaseAsync(PurchaseId);
         }
         catch (ApiException ex)
         {
+            // Si la compra no existe, se muestra un mensaje específico.
+            // Para otros errores de API se muestra la respuesta recibida.
             ErrorMessage = ex.StatusCode == 404
                 ? "No se ha encontrado la compra solicitada."
                 : ex.Response;
         }
         catch (Exception ex)
         {
+            // Se informa de cualquier otro problema producido al cargar el detalle.
             ErrorMessage = $"No se ha podido cargar el detalle de la compra: {ex.Message}";
         }
         finally
@@ -141,6 +153,7 @@ else if (PurchaseDetail is not null)
 
     private void GoToPurchaseSelection()
     {
+        // Permite volver al listado de dispositivos para iniciar otra compra.
         Navigation.NavigateTo("/purchase/selectdevicesforpurchase");
     }
 }
