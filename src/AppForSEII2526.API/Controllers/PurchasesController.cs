@@ -149,8 +149,8 @@ namespace AppForSEII2526.API.Controllers
 
 					continue;
 				}
-
-				if (device.quantityForPurchase < item.Quantity)
+				
+                if (device.quantityForPurchase < item.Quantity)
 				{
 					ModelState.AddModelError(
 						"Stock",
@@ -159,7 +159,17 @@ namespace AppForSEII2526.API.Controllers
 					continue;
 				}
 
-				var purchaseItem = new PurchaseItem(
+                if (device.Model.NameModel.Contains("Huawei") || device.Name.Contains("Huawei") || device.Model.NameModel.Contains("Xiaomi") || device.Name.Contains("Xiaomi"))
+                {
+
+                    ModelState.AddModelError(
+                        "Model",
+                        $"Error: las tecnologias de estas marcas ya no se comercializan en Europa");
+
+                    continue;
+                }
+
+                var purchaseItem = new PurchaseItem(
 					device,
 					item.Price,
 					item.Quantity,

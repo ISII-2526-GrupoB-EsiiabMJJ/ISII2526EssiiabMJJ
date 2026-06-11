@@ -18,13 +18,21 @@ namespace AppForSEII2526.UT.PurchasesController_test
         private readonly ApplicationUser _user;
         private readonly Device _deviceWithStock;
         private readonly Device _deviceWithoutEnoughStock;
+        private readonly Device _deviceHuawei;
+        private readonly Device _deviceHuawei1;
+        private readonly Device _deviceXiaomi;
+        private readonly Device _deviceXiaomi1;
 
         public PostPurchase_test()
         {
             var models = new List<Model>()
             {
                 new Model(1, "NVIDIA GeForce RTX 5090"),
-                new Model(2, "NVIDIA GeForce RTX 5080")
+                new Model(2, "NVIDIA GeForce RTX 5080"),
+                new Model(3, "2026"),
+                new Model(4, "Huawei 2026_1"),
+                new Model(5, "2026"),
+                new Model(6, "Xiaomi 2026_1")
             };
 
             _deviceWithStock = new Device(
@@ -63,6 +71,77 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new List<PurchaseItem>()
             );
 
+            _deviceHuawei = new Device(
+                3,
+                2026,
+                QualityType.Medium,
+                5,
+                10,
+                49.99,
+                799.99,
+                "2026",
+                "Plata",
+                "Huawei", 
+                "Descripcion",
+                models[2],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
+
+            _deviceHuawei1 = new Device(
+                4,
+                2026,
+                QualityType.Medium,
+                5,
+                10,
+                49.99,
+                799.99,
+                "Huawei 2026_1",
+                "Plata",
+                "Huawei_1",
+                "Descripcion",
+                models[3],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
+
+            _deviceXiaomi = new Device(
+                5,
+                2026,
+                QualityType.Medium,
+                5,
+                10,
+                49.99,
+                799.99,
+                "2026",
+                "Plata",
+                "Xiaomi",
+                "Descripcion",
+                models[4],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
+
+            _deviceXiaomi1 = new Device(
+                6,
+                2026,
+                QualityType.Medium,
+                5,
+                10,
+                49.99,
+                799.99,
+                "Xiaomi 2026_1",
+                "Plata",
+                "Xiaomi_1",
+                "Descripcion",
+                models[5],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
             _user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
@@ -73,6 +152,11 @@ namespace AppForSEII2526.UT.PurchasesController_test
             _context.AddRange(models);
             _context.Add(_deviceWithStock);
             _context.Add(_deviceWithoutEnoughStock);
+
+            _context.Add(_deviceHuawei);
+            _context.Add(_deviceHuawei1);
+            _context.Add(_deviceXiaomi);
+            _context.Add(_deviceXiaomi1);
             _context.SaveChanges();
         }
 
@@ -316,6 +400,52 @@ namespace AppForSEII2526.UT.PurchasesController_test
                     }),
                 "Stock"
             };
+            
+
+            yield return new object[]
+           {
+                new PurchaseForCreateDTO(
+                    "maria@uclm.es",
+                    "Maria",
+                    "Torres",
+                    "Albacete",
+                    PaymentMethod.CreditCard,
+                    new List<PurchaseItemDTO>
+                    {
+                        new PurchaseItemDTO(
+                            4,
+                            "Huawei_1",
+                            "Huawei 2026_1",
+                            "Plata",
+                            799.99m,
+                            3,
+                            "Descripcion")
+                    }),
+                "Model"
+           };
+
+            yield return new object[]
+           {
+                new PurchaseForCreateDTO(
+                    "maria@uclm.es",
+                    "Maria",
+                    "Torres",
+                    "Albacete",
+                    PaymentMethod.CreditCard,
+                    new List<PurchaseItemDTO>
+                    {
+                        new PurchaseItemDTO(
+                            6,
+                            "Xiaomi_1",
+                            "Xiaomi 2026_1",
+                            "Plata",
+                            799.99m,
+                            3,
+                            "Descripcion")
+                    }),
+                "Model"
+           };
+
         }
 
         [Theory]
