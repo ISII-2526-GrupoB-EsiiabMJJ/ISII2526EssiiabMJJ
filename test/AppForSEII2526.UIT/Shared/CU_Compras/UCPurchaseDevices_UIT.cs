@@ -10,6 +10,7 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string deviceName1 = "Galaxy S24";
     private const string deviceName2 = "iPhone 15";
     private const string deviceName3 = "Pixel 8";
+    private const string deviceName4 = "ROG Strix G16";
 
     // Colores usados en los filtros de la pantalla de selección.
     private const string color1 = "Azul";
@@ -301,6 +302,31 @@ public class UCPurchaseDevices_UIT : UC_UIT
         // Assert
         // Debe mostrarse el mensaje de validación asociado al campo correspondiente.
         Assert.True(_driver.FindElement(By.Id(expectedErrorId)).Displayed);
+    }
+
+    [Fact]
+    [Trait("LevelTesting", "Functional Testing")]
+    public void UC6_2_BackendError_ASUSWithPayPal()
+    {
+        // Arrange
+        InitialStepsForPurchaseDevices_UIT();
+
+        // Act
+        selectDevices.AddDevice(deviceName4);
+        selectDevices.ContinuePurchase();
+
+        createPurchase.WaitForCreatePurchasePage();
+        createPurchase.FillCustomerData(
+            customerName,
+            customerSurname,
+            deliveryAddress);
+
+        createPurchase.SelectPaymentMethod("PayPal");
+        createPurchase.SavePurchase();
+
+        // Assert
+        Assert.True(createPurchase.IsCreatePurchaseErrorVisible());
+        Assert.Contains("PayPal", createPurchase.GetCreatePurchaseError());
     }
 
     [Fact]

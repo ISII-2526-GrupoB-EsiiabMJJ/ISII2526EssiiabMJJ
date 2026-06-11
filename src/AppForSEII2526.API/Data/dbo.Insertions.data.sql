@@ -32,7 +32,8 @@ VALUES
     -- Modelos necesarios para CU ComprarDispositivo
     (5, 'Samsung Galaxy S24'),
     (6, 'Apple iPhone 15'),
-    (7, 'Google Pixel 8');
+    (7, 'Google Pixel 8'),
+    (8, 'ASUS ROG Strix G16');
 
 SET IDENTITY_INSERT [dbo].[Model] OFF;
 
@@ -143,7 +144,8 @@ VALUES
 	    -- Dispositivos necesarios para CU ComprarDispositivo
     (6, 5, 2024, 3, 0, 8, 0, 899.99, 'Galaxy S24', 'Azul', 'Samsung', 'Smartphone Samsung Galaxy S24 disponible para compra'),
     (7, 6, 2024, 3, 0, 10, 0, 999.99, 'iPhone 15', 'Negro', 'Apple', 'Smartphone Apple iPhone 15 disponible para compra'),
-    (8, 7, 2024, 3, 0, 6, 0, 799.99, 'Pixel 8', 'Blanco', 'Google', 'Smartphone Google Pixel 8 disponible para compra');
+    (8, 7, 2024, 3, 0, 6, 0, 799.99, 'Pixel 8', 'Blanco', 'Google', 'Smartphone Google Pixel 8 disponible para compra'),
+    (9, 8, 2025, 3, 0, 6, 0, 1899.99, 'ROG Strix G16', 'Negro', 'ASUS', 'Portátil gaming ASUS ROG Strix G16 disponible para compra');
 SET IDENTITY_INSERT [dbo].[Device] OFF;
 
 -----------------------------------------------------------
@@ -213,3 +215,4 @@ VALUES
     (2, 1, 49.99, 1, 'Tarjeta gráfica de última generación ideal para gaming 4K y renderizado profesional.'),
     (3, 1, 39.99, 1, 'Excelente rendimiento para videojuegos exigentes y aplicaciones de diseño 3D.'),
     (4, 1, 64.99, 1, 'Modelo tope de gama con gran eficiencia energética y potencia para IA y gráficos avanzados.');
+

@@ -165,6 +165,15 @@ namespace AppForSEII2526.API.Controllers
                     continue;
                 }
 
+                if (device.Brand.Equals("ASUS", StringComparison.OrdinalIgnoreCase) && purchaseForCreate.PaymentMethod == PaymentMethod.PayPal)
+                {
+                    ModelState.AddModelError(
+                        "PaymentMethod",
+                        $"El dispositivo con marca {device.Brand} no se puede pagar con PayPal");
+
+                    continue;
+                }
+
                 // No se permite comprar una cantidad superior al stock disponible.
                 if (device.quantityForPurchase < item.Quantity)
                 {
