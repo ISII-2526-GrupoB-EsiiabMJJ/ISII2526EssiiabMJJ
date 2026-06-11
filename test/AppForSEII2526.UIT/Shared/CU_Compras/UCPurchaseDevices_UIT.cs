@@ -17,11 +17,13 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string brand3 = "Google";
     private const string model3 = "Google Pixel 8";
     private const string price3 = "799,99 €";
-    private const string description3 = "Smartphone Google Pixel 8 disponible para compra";
 
     private const string customerName = "Maria";
     private const string customerSurname = "Torres";
     private const string deliveryAddress = "Albacete";
+
+
+    private const string description = "¡Estoy deseando que me llegue!";
 
     public UCPurchaseDevices_UIT(ITestOutputHelper output) : base(output)
     {
@@ -258,5 +260,100 @@ public class UCPurchaseDevices_UIT : UC_UIT
         Assert.Equal(customerName, _driver.FindElement(By.Id("purchaseName")).GetAttribute("value"));
         Assert.Equal(customerSurname, _driver.FindElement(By.Id("purchaseSurname")).GetAttribute("value"));
         Assert.Equal(deliveryAddress, _driver.FindElement(By.Id("purchaseDeliveryAddress")).GetAttribute("value"));
+    }
+
+    [Theory]
+    [InlineData("CreditCard")]
+    [InlineData("PayPal")]
+    [Trait("LevelTesting", "Functional Testing")]
+    [Trait("UseCase", "Comprar dispositivo")]
+    public void UC8_ModifyCartAndPurchase(string paymentMethod)
+    {
+        InitialStepsForPurchaseDevices_UIT();
+
+        selectDevices.SearchByColor(color1);
+
+        var waitDevice = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+        waitDevice.Until(d => d.PageSource.Contains(deviceName1));
+
+        Assert.Contains(deviceName1, _driver.PageSource);
+
+        selectDevices.AddDevice(deviceName1);
+
+        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+        /*
+        selectDevices.ContinuePurchase();
+
+        var waitForm = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+        waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
+
+        createPurchase.ModifyCartAndWaitForSelection();
+        */
+
+        selectDevices.SearchByColor(color2);
+
+        waitDevice.Until(d => d.PageSource.Contains(deviceName2));
+
+        Assert.Contains(deviceName2, _driver.PageSource);
+
+        selectDevices.AddDevice(deviceName2);
+
+        selectDevices.AddDevice(deviceName3);
+
+        selectDevices.RemoveFirstDeviceFromCart();
+
+        selectDevices.ContinuePurchase();
+
+        waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
+
+        createPurchase.ModifyCartAndWaitForSelection();
+
+        var waitSelection = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));
+        waitSelection.Until(d => d.FindElements(By.Id("TableOfDevices")).Count > 0);
+
+        selectDevices.RemoveFirstDeviceFromCart();
+
+        selectDevices.ContinuePurchase();
+
+        waitForm.Until(d => d.FindElements(By.Id("purchaseName")).Count > 0);
+
+        createPurchase.FillCustomerData(
+            customerName,
+            customerSurname,
+            deliveryAddress);
+
+        createPurchase.SelectPaymentMethod(paymentMethod);
+
+        createPurchase.SavePurchaseAndWaitForDetail();
+
+        _output.WriteLine($"[{paymentMethod}] URL FINAL: " + _driver.Url);
+
+        Assert.Contains("detailpurchase", _driver.Url.ToLower());
+        Assert.True(detailPurchase.IsLoaded());
+
+        Assert.Contains(customerName, detailPurchase.GetCustomerName());
+        Assert.Contains(customerSurname, detailPurchase.GetCustomerSurname());
+        Assert.Contains(deliveryAddress, detailPurchase.GetDeliveryAddress());
+        Assert.Contains(description, detailPurchase.GetDescription());
+
+        var expectedPurchaseItems = new List<string[]>
+        {
+            new string[]
+            {
+                brand3,
+                model3,
+                color3,
+                price3,
+                "1",
+                price3
+            }
+        };
+
+        Assert.True(
+            detailPurchase.CheckListOfPurchasedDevices(expectedPurchaseItems),
+            "Error: los dispositivos comprados no son los esperados");
+
+        Assert.Contains("Cantidad total", detailPurchase.GetTotalQuantity());
+        Assert.Contains("Precio total", detailPurchase.GetTotalPrice());
     }
 }

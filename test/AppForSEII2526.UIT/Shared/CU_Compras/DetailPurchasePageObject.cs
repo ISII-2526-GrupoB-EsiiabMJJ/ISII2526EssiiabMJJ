@@ -6,6 +6,7 @@ namespace AppForSEII2526.UIT.Shared.CU_Compras;
 public class DetailPurchasePageObject : PageObject
 {
     private readonly By _purchaseDetail = By.Id("purchaseDetail");
+    private readonly By _purchaseDescription = By.Id("purchaseDescription");
     private readonly By _purchaseCustomerName = By.Id("purchaseCustomerName");
     private readonly By _purchaseCustomerSurname = By.Id("purchaseCustomerSurname");
     private readonly By _purchaseDeliveryAddress = By.Id("purchaseDeliveryAddress");
@@ -51,6 +52,12 @@ public class DetailPurchasePageObject : PageObject
     {
         WaitForBeingVisible(_purchaseTotalPrice);
         return _driver.FindElement(_purchaseTotalPrice).Text;
+    }
+
+    public string GetDescription() { 
+    
+        WaitForBeingVisible(_purchaseDescription);
+        return _driver.FindElement(_purchaseDescription).Text;
     }
 
     public bool CheckListOfPurchasedDevices(List<string[]> expectedPurchaseItems)
