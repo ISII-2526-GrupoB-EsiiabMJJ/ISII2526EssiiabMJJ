@@ -2,6 +2,7 @@
 using AppForSEII2526.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.DependencyResolver;
 using System.Net;
 
 namespace AppForSEII2526.API.Controllers
@@ -183,7 +184,26 @@ namespace AppForSEII2526.API.Controllers
 
                     continue;
                 }
+                
+                if(device.quantityForPurchase< item.Quantity)
+                {
+                    ModelState.AddModelError(
+                        "Stock",
+                        $"El numero de dispositivos que solicita no esta disponible");
 
+                    continue;
+                }
+                
+                if(device.quantityForPurchase< item.Quantity)
+                {
+                    ModelState.AddModelError(
+                        "Stock",
+                        $"El numero de dispositivos que solicita no esta disponible");
+
+                    continue;
+                }
+
+                device.quantityForPurchase -= item.Quantity; //resto al stock la cantidad comprada
                 // Se crea la línea de compra asociada al dispositivo encontrado.
                 var purchaseItem = new PurchaseItem(
                     device,
@@ -192,6 +212,7 @@ namespace AppForSEII2526.API.Controllers
                     purchase)
                 {
                     Description = item.Description
+                    
                 };
 
                 purchase.Items.Add(purchaseItem);
@@ -230,6 +251,7 @@ namespace AppForSEII2526.API.Controllers
                 purchase.PurchaseDateUtc,
                 Convert.ToDouble(purchase.TotalPrice),
                 purchase.TotalQuantity,
+                //purchase.PaymentMethod,
                 purchase.Items.Select(pi => new PurchaseItemDTO(
                     pi.DeviceId,
                     pi.Device.Brand,

@@ -159,6 +159,11 @@ else
         <p id="cartTotalPrice">
             Total: @PurchaseState.TotalPrice.ToString("0.00") €
         </p>
+        <button id="clearDevicesCart"
+                class="btn btn-secondary mb-3 ms-2"
+                @onclick="ClearCart">
+            Vaciar Carrito
+        </button>
     </div>
 }
 
@@ -231,6 +236,10 @@ else
         PurchaseState.RemoveDevice(deviceId);
     }
 
+    public async Task ClearCart()
+    {
+        PurchaseState.ClearCart();
+    }
     private void ContinuePurchase()
     {
         // No se permite avanzar al formulario si el carrito está vacío.

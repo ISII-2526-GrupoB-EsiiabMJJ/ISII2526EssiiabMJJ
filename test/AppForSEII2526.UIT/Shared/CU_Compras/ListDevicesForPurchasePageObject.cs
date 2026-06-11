@@ -106,6 +106,16 @@ public class ListDevicesForPurchasePageObject : PageObject
         _driver.FindElement(removeButton).Click();
     }
 
+    public void RemoveDevicesFromCart()
+    {
+        // Elimina el primer dispositivo que aparece en el carrito.
+        // Se usa el prefijo del id porque cada botón de eliminar pertenece a un dispositivo distinto.
+        var clearCart = By.CssSelector("button[id^='clearDevicesCar']");
+
+        WaitForBeingClickable(clearCart);
+        _driver.FindElement(clearCart).Click();
+    }
+
     public void IncreaseFirstDeviceQuantity()
     {
         // Aumenta la cantidad del primer dispositivo seleccionado en el carrito.

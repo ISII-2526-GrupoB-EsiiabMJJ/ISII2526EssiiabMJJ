@@ -15,10 +15,12 @@ namespace AppForSEII2526.UT.PurchasesController_test
 {
     public class PostPurchase_test : AppForSEII25264SqliteUT
     {
-        private readonly ApplicationUser _user;
+        private readonly ApplicationUser _user; 
+        private readonly ApplicationUser _user2;
         private readonly Device _deviceWithStock;
         private readonly Device _deviceWithoutEnoughStock;
-
+        private readonly Device _asusDevice;
+        private readonly Device _appleDevice;
         public PostPurchase_test()
         {
             // Datos base compartidos por los tests. Se crean modelos, dispositivos y usuario
@@ -26,7 +28,9 @@ namespace AppForSEII2526.UT.PurchasesController_test
             var models = new List<Model>()
             {
                 new Model(1, "NVIDIA GeForce RTX 5090"),
-                new Model(2, "NVIDIA GeForce RTX 5080")
+                new Model(2, "NVIDIA GeForce RTX 5080"),
+                new Model(3, "Asus 5080 Gaming Pro"),
+                new Model(4, "Iphone 15")
             };
 
             // Dispositivo con stock suficiente. Se utiliza en los casos donde la compra debe completarse.
@@ -66,12 +70,51 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 new List<ReviewItem>(),
                 new List<PurchaseItem>()
             );
+            _asusDevice = new Device(
+                3,
+                2025,
+                QualityType.Medium,
+                5,
+                4,
+                49.99,
+                799.99,
+                "Asus 5080 Gaming Pro",
+                "Plata",
+                "ASUS",
+                "Ideal para gaming 4K con DLSS 4.0",
+                models[2],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
 
+            _appleDevice = new Device(
+                4,
+                2025,
+                QualityType.MediumHight,
+                3,
+                8,
+                49.99,
+                999.99,
+                "iPhone 15",
+                "Negro",
+                "Apple",
+                "Smartphone Apple iPhone 15",
+                models[3],
+                new List<RentDevice>(),
+                new List<ReviewItem>(),
+                new List<PurchaseItem>()
+            );
             // Usuario válido para las compras correctas. El UserName debe coincidir con el CustomerUserName del DTO.
             _user = new ApplicationUser("1", "Maria", "Torres", "maria@uclm.es")
             {
                 UserName = "maria@uclm.es",
                 Email = "maria@uclm.es"
+            };
+            _user2 = new ApplicationUser("2", "Elena", "Martinez", "elena@uclm.es")
+            {
+                UserName = "elena@uclm.es",
+                Email = "elena@uclm.es"
             };
 
             // Se insertan los datos iniciales en la base de datos en memoria antes de ejecutar cada test.
@@ -79,6 +122,10 @@ namespace AppForSEII2526.UT.PurchasesController_test
             _context.AddRange(models);
             _context.Add(_deviceWithStock);
             _context.Add(_deviceWithoutEnoughStock);
+            _context.Add(_user2);
+            _context.AddRange(models);
+            _context.Add(_asusDevice);
+            _context.Add(_appleDevice);
             _context.SaveChanges();
         }
 
@@ -151,6 +198,12 @@ namespace AppForSEII2526.UT.PurchasesController_test
             Assert.Equal("Negro", item.Color);
             Assert.Equal(999.99m, item.Price);
             Assert.Equal(2, item.Quantity);
+            //Assert.Equal(PaymentMethod.CreditCard, purchaseForCreate.PaymentMethod);
+
+            //comprobar el stock restante (habia 5 y compro 2)
+            var device = _context.Device.First(d => d.Id == _deviceWithStock.Id);
+
+            Assert.Equal(3, device.quantityForPurchase);
 
             // Se comprueba que la compra se ha guardado realmente en la base de datos.
             Assert.Single(_context.Purchases);
@@ -158,6 +211,132 @@ namespace AppForSEII2526.UT.PurchasesController_test
             // También debe haberse guardado una única línea asociada a la compra.
             Assert.Single(_context.PurchaseItems);
         }
+
+        [Fact]
+        [Trait("Database", "WithoutFixture")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_NonASUS_WithPayPal_OK_test()
+        {
+            // Arrange
+            var controller = new PurchasesController(
+                _context,
+                new Mock<ILogger<PurchasesController>>().Object);
+
+            var purchaseForCreate = new PurchaseForCreateDTO(
+                "elena@uclm.es",
+                "Elena",
+                "Martinez",
+                "Albacete",
+                PaymentMethod.PayPal,
+                new List<PurchaseItemDTO>
+                {
+            new PurchaseItemDTO(
+                _appleDevice.Id,
+                _appleDevice.Brand,
+                _appleDevice.Model.NameModel,
+                _appleDevice.Color,
+                999.99m,
+                1,
+                _appleDevice.Description)
+                });
+
+            // Act
+            var result = await controller.CreatePurchase(purchaseForCreate);
+
+            // Assert
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+            var purchaseDetail = Assert.IsType<PurchaseDetailDTO>(createdResult.Value);
+
+            Assert.Equal(999.99, purchaseDetail.TotalPrice, 2);
+            Assert.Equal(1, purchaseDetail.TotalQuantity);
+
+            var item = Assert.Single(purchaseDetail.PurchaseItems);
+
+            Assert.Equal("Apple", item.Brand);
+            Assert.Equal("Iphone 15", item.Model);
+
+            Assert.Single(_context.Purchases);
+            Assert.Single(_context.PurchaseItems);
+        }
+
+        [Fact]
+        [Trait("Database", "asusDevice")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_OK_ASUS()
+        {
+            // Arrange
+            // Se inicializa el controlador con el contexto de pruebas y un logger simulado.
+            var controller = new PurchasesController(
+                _context,
+                new Mock<ILogger<PurchasesController>>().Object);
+
+            // Compra válida: usuario registrado, dirección informada, método permitido,
+            // y un dispositivo existente con stock suficiente.
+            var purchaseForCreate = new PurchaseForCreateDTO(
+                "elena@uclm.es",
+                "Elena",
+                "Martinez",
+                "Albacete",
+                PaymentMethod.CreditCard,
+                new List<PurchaseItemDTO>
+                {
+                    new PurchaseItemDTO(
+                        _asusDevice.Id,
+                        _asusDevice.Brand,
+                        _asusDevice.Model.NameModel,
+                        _asusDevice.Color,
+                        799.99m,
+                        2,
+                        _asusDevice.Description)
+                });
+
+            // Act
+            // Se llama al método del controlador encargado de crear la compra.
+            var result = await controller.CreatePurchase(purchaseForCreate);
+
+            // Assert
+            // Si los datos son válidos, la respuesta debe ser 201 Created.
+            var createdResult = Assert.IsType<CreatedAtActionResult>(result.Result);
+
+            // El recurso creado debe quedar asociado a la acción que permite consultar el detalle de la compra.
+            Assert.Equal(nameof(PurchasesController.GetPurchase), createdResult.ActionName);
+
+            // Se obtiene el DTO devuelto para comprobar que contiene el detalle de la compra creada.
+            var purchaseDetail = Assert.IsType<PurchaseDetailDTO>(createdResult.Value);
+
+            // Se comprueba que los datos personales devueltos coinciden con los enviados en la petición.
+            Assert.Equal("Elena", purchaseDetail.Name);
+            Assert.Equal("Martinez", purchaseDetail.Surname);
+            Assert.Equal("Albacete", purchaseDetail.DeliveryAddress);
+
+            // El precio total debe ser precio unitario * cantidad: 999.99 * 2 = 1999.98.
+            Assert.Equal(1599.98, purchaseDetail.TotalPrice, 2);
+
+            // La cantidad total debe coincidir con la suma de unidades compradas.
+            Assert.Equal(2, purchaseDetail.TotalQuantity);
+
+            // Solo se ha añadido una línea de compra, correspondiente al único dispositivo solicitado.
+            Assert.Single(purchaseDetail.PurchaseItems);
+
+            // Se extrae la línea de compra para comprobar los datos concretos del dispositivo.
+            var item = purchaseDetail.PurchaseItems.First();
+
+            // El dispositivo del detalle debe ser el mismo que se incluyó en la compra.
+            Assert.Equal(_asusDevice.Id, item.DeviceId);
+            Assert.Equal("ASUS", item.Brand);
+            Assert.Equal("Asus 5080 Gaming Pro", item.Model);
+            Assert.Equal("Plata", item.Color);
+            Assert.Equal(799.99m, item.Price);
+            Assert.Equal(2, item.Quantity);
+            Assert.Equal(PaymentMethod.CreditCard, purchaseForCreate.PaymentMethod);
+
+            // Se comprueba que la compra se ha guardado realmente en la base de datos.
+            Assert.Single(_context.Purchases);
+
+            // También debe haberse guardado una única línea asociada a la compra.
+            Assert.Single(_context.PurchaseItems);
+        }
+
 
         [Fact]
         [Trait("Database", "WithoutFixture")]
@@ -188,6 +367,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 "La compra no puede ser nula",
                 validationProblem.Errors["Purchase"]);
         }
+
+
 
         [Fact]
         [Trait("Database", "WithoutFixture")]
@@ -238,6 +419,47 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 validationProblem.Errors["Device"]);
 
             // No se debe persistir nada si la compra contiene dispositivos inválidos.
+            Assert.Empty(_context.Purchases);
+            Assert.Empty(_context.PurchaseItems);
+        }
+
+        [Fact]
+        [Trait("Database", "WithoutFixture")]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CreatePurchase_ASUS_WithPayPal_ReturnsBadRequest()
+        {
+            // Arrange
+            var controller = new PurchasesController(
+                _context,
+                new Mock<ILogger<PurchasesController>>().Object);
+
+            var purchaseForCreate = new PurchaseForCreateDTO(
+                "elena@uclm.es",
+                "Elena",
+                "Martinez",
+                "Albacete",
+                PaymentMethod.PayPal,
+                new List<PurchaseItemDTO>
+                {
+            new PurchaseItemDTO(
+                _asusDevice.Id,
+                _asusDevice.Brand,
+                _asusDevice.Model.NameModel,
+                _asusDevice.Color,
+                799.99m,
+                1,
+                _asusDevice.Description)
+                });
+
+            // Act
+            var result = await controller.CreatePurchase(purchaseForCreate);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result.Result);
+            var validationProblem = Assert.IsType<ValidationProblemDetails>(badRequestResult.Value);
+
+            Assert.Contains("PaymentMethod", validationProblem.Errors.Keys);
+
             Assert.Empty(_context.Purchases);
             Assert.Empty(_context.PurchaseItems);
         }
@@ -372,10 +594,32 @@ namespace AppForSEII2526.UT.PurchasesController_test
                             "NVIDIA GeForce RTX 5080",
                             "Plata",
                             799.99m,
-                            5,
+                            2,
                             "Descripción")
                     }),
                 "Stock"
+            };
+
+            yield return new object[]
+            {
+                new PurchaseForCreateDTO(
+                    "elena@uclm.es",
+                    "Elena",
+                    "Martinez",
+                    "Albacete",
+                    PaymentMethod.PayPal,
+                    new List<PurchaseItemDTO>
+                    {
+                        new PurchaseItemDTO(
+                            3,
+                            "ASUS",
+                            "Asus 5080 Gaming Pro",
+                            "Plata",
+                            799.99m,
+                            1,
+                            "Descripción")
+                    }),
+                "PaymentMethod"
             };
         }
 

@@ -119,6 +119,12 @@ public class PurchaseStateContainer
         };
     }
 
+    public void ClearCart()
+    {
+        PurchaseItems.Clear();
+        NotifyStateChanged();
+    }
+
     public void Clear()
     {
         // Se limpia el estado tras finalizar la compra o reiniciar el proceso.

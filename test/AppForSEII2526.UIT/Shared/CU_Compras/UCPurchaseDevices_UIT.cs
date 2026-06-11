@@ -10,7 +10,6 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string deviceName1 = "Galaxy S24";
     private const string deviceName2 = "iPhone 15";
     private const string deviceName3 = "Pixel 8";
-    private const string deviceName4 = "ROG Strix G16";
 
     // Colores usados en los filtros de la pantalla de selección.
     private const string color1 = "Azul";
@@ -22,6 +21,11 @@ public class UCPurchaseDevices_UIT : UC_UIT
     private const string model2 = "Apple iPhone 15";
     private const string price2 = "999,99 €";
     private const string description2 = "Smartphone Apple iPhone 15 disponible para compra";
+
+    //datos del primer dispositivo
+    private const string brand1 = "Samsung";
+    private const string model1 = "Samsung Galaxy S24";
+    private const string price1 = "899,99 €";
 
     // Datos del tercer dispositivo, utilizado en el flujo básico de compra.
     private const string brand3 = "Google";
@@ -269,6 +273,33 @@ public class UCPurchaseDevices_UIT : UC_UIT
         Assert.True(selectDevices.IsEmptyCartMessageVisible());
     }
 
+    [Fact]
+    [Trait("LevelTesting", "Functional Testing")]
+    public void UC5_2_ClearCart()
+    {
+        // Arrange
+        InitialStepsForPurchaseDevices_UIT();
+
+        // Act
+        // Se añade y elimina un dispositivo para dejar el carrito vacío.
+        selectDevices.AddDevice(deviceName1);
+        selectDevices.AddDevice(deviceName2);
+
+        selectDevices.RemoveDevicesFromCart();
+
+        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(10));
+        wait.Until(d =>
+            d.FindElement(By.Id("purchaseDevicesButton")).GetAttribute("disabled") != null);
+
+        var purchaseButton = _driver.FindElement(By.Id("purchaseDevicesButton"));
+        var isDisabled = purchaseButton.GetAttribute("disabled") != null;
+
+        // Assert
+        // Con el carrito vacío no debe permitirse continuar a la compra.
+        Assert.True(isDisabled);
+        Assert.True(selectDevices.IsEmptyCartMessageVisible());
+    }
+
     [Theory]
     [Trait("LevelTesting", "Functional Testing")]
     [InlineData("", "Torres", "Albacete", "purchaseNameError")]
@@ -302,31 +333,6 @@ public class UCPurchaseDevices_UIT : UC_UIT
         // Assert
         // Debe mostrarse el mensaje de validación asociado al campo correspondiente.
         Assert.True(_driver.FindElement(By.Id(expectedErrorId)).Displayed);
-    }
-
-    [Fact]
-    [Trait("LevelTesting", "Functional Testing")]
-    public void UC6_2_BackendError_ASUSWithPayPal()
-    {
-        // Arrange
-        InitialStepsForPurchaseDevices_UIT();
-
-        // Act
-        selectDevices.AddDevice(deviceName4);
-        selectDevices.ContinuePurchase();
-
-        createPurchase.WaitForCreatePurchasePage();
-        createPurchase.FillCustomerData(
-            customerName,
-            customerSurname,
-            deliveryAddress);
-
-        createPurchase.SelectPaymentMethod("PayPal");
-        createPurchase.SavePurchase();
-
-        // Assert
-        Assert.True(createPurchase.IsCreatePurchaseErrorVisible());
-        Assert.Contains("PayPal", createPurchase.GetCreatePurchaseError());
     }
 
     [Fact]
@@ -369,6 +375,8 @@ public class UCPurchaseDevices_UIT : UC_UIT
     [InlineData("PayPal")]
     [Trait("LevelTesting", "Functional Testing")]
     [Trait("UseCase", "Comprar dispositivo")]
+
+
     public void UC1_8_ModifyCartAndPurchase(string paymentMethod)
     {
         // Arrange

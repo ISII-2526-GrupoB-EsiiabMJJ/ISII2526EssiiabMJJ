@@ -19,7 +19,7 @@ public class CreatePurchasePageObject : PageObject
     private readonly By _createPurchaseTotalPrice = By.Id("createPurchaseTotalPrice");
     private readonly By _purchaseSelectedDevices = By.Id("purchaseSelectedDevices");
 
-    private readonly By _createPurchaseError = By.Id("createPurchaseError"); // añadir error de backend
+    // private readonly By _createPurchaseError = By.Id("createPurchaseError"); //añadir error de backend 
 
     public CreatePurchasePageObject(IWebDriver driver, ITestOutputHelper output)
         : base(driver, output)
@@ -108,15 +108,5 @@ public class CreatePurchasePageObject : PageObject
         // Devuelve el resumen de dispositivos seleccionados mostrado en el formulario.
         WaitForBeingVisible(_purchaseSelectedDevices);
         return _driver.FindElement(_purchaseSelectedDevices).Text;
-    }
-
-    public bool IsCreatePurchaseErrorVisible()
-    {
-        return _driver.FindElements(_createPurchaseError).Any(e => e.Displayed);
-    }
-    public string GetCreatePurchaseError()
-    {
-        WaitForBeingVisible(_createPurchaseError);
-        return _driver.FindElement(_createPurchaseError).Text;
     }
 }

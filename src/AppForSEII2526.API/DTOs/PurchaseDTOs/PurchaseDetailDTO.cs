@@ -12,6 +12,7 @@ namespace AppForSEII2526.API.DTOs.PurchaseDTOs
             DateTime purchaseDateUtc,
             double totalPrice,
             int totalQuantity,
+            //PaymentMethod paymentMethod,
             IList<PurchaseItemDTO> purchaseItems)
         {
             Id = id;
